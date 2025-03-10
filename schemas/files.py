@@ -9,9 +9,7 @@ from schemas.base_model import TunedModel
 class GetFile(TunedModel):
     id: UUID
     file_paths: List[str]
-    contract_id: Optional[UUID] = None
-    invoice_id: Optional[UUID] = None
-    created_at: Optional[datetime]
+    created_at: datetime
 
 
 class CreateFile(TunedModel):

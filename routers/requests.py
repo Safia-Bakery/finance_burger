@@ -31,7 +31,6 @@ async def create_request(
 
     if body.file_paths is not None and body.contract is not None:
         contract = await ContractDAO.add(session=db, **{"request_id": created_request.id})
-
         await FileDAO.add(
             session=db,
             **{
