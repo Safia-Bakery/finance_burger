@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import Generator, AsyncGenerator
 import asyncio
 from sqlalchemy import Sequence
@@ -16,6 +17,7 @@ engine = create_async_engine(settings.DB_URL, future=True, echo=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
+@asynccontextmanager
 async def create_sequence():
     """Ensure the sequence exists before creating tables."""
     async with async_session_maker() as session:
@@ -23,6 +25,7 @@ async def create_sequence():
             await session.execute(
                 "CREATE SEQUENCE IF NOT EXISTS serial_number_seq START 1 INCREMENT 1;"
             )
+    yield
 
 
 # # Run the async setup
