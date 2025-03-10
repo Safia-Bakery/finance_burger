@@ -62,6 +62,8 @@ async def get_current_user(token: str = Depends(reuseable_oauth), session: Async
         username = payload.get('sub')
         expire_datetime = payload.get('exp')
         user = payload.get('user')
+        if username == settings.BOT_USER:
+            return user
         if datetime.fromtimestamp(expire_datetime) < datetime.now():
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -90,10 +92,7 @@ class PermissionChecker:
         permissions = user['permissions']
         key, value = next(iter(self.required_permissions.items()))
         permissions = permissions.get(key)
-        print("need permissions: ", value)
-        print("user permissions: ", permissions)
         need_permissions = list(set(value) & set(permissions)) if permissions else None
-        print("intersection: ", need_permissions)
         if not need_permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

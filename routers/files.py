@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, UploadFile
@@ -16,17 +18,15 @@ files_router = APIRouter()
 
 @files_router.post("/files/upload", response_model=GetFile)
 async def upload_files(
-        # body: CreateFile,
         files: List[UploadFile] = File(...),
         # db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Files": ["read"]}))
 ):
-    # invoice = None
-    # contract = None
-    # if body.invoice is not None:
-    #     invoice = await InvoiceDAO.add(session=db, **{"request_id": body.request_id})
-    # if body.contract is not None:
-    #     contract = await ContractDAO.add(session=db, **{"request_id": body.request_id})
+    base_dir = "files"
+    date_dir = datetime.now().strftime("%Y/%m/%d")  # Create a path like "2025/03/10"
+    save_dir = os.path.join(base_dir, date_dir)
+
+    os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
 
     file_paths = []
     for file in files:
@@ -39,14 +39,4 @@ async def upload_files(
                 buffer.write(chunk)
         file_paths.append(file_path)
 
-    # file = await FileDAO.add(
-    #     session=db,
-    #     **{
-    #         "file_path": file_paths,
-    #         "contract_id": contract.id if contract is not None else None,
-    #         "invoice_id": invoice.id if invoice is not None else None
-    #     }
-    # )
-
     return {"file_paths": file_paths}
-    # return file

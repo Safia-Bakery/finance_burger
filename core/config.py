@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY")
     admin_role: str = os.getenv("ADMIN_ROLE")
     admin_password: str = os.getenv("ADMIN_PASSWORD")
+    BOT_USER: str = os.getenv("BOT_USER")
 
     # admin_role:str = os.getenv('ADMIN_ROLE')
     # admin_password:str = os.getenv('ADMIN_PASSWORD')
