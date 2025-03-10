@@ -24,7 +24,7 @@ async def upload_files(
 
     file_paths = []
     for file in files:
-        file_path = f"files/{file.filename}"
+        file_path = os.path.join(save_dir, file.filename)
         with open(file_path, "wb") as buffer:
             while True:
                 chunk = await file.read(1024)
