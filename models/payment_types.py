@@ -1,0 +1,19 @@
+import uuid
+
+from sqlalchemy import Column, ForeignKey, DateTime, func, Boolean, UUID
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import relationship
+
+from core.base import Base
+
+
+class PaymentTypes(Base):
+    __tablename__ = 'payment_types'
+    id = Column(UUID, primary_key=True, default=uuid.uuid4)
+    name = Column(String, unique=True, nullable=False)
+    description = Column(String)
+    is_active = Column(Boolean, default=True)
+    requests = relationship('Requests', back_populates='payment_type', lazy="joined", passive_deletes=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
