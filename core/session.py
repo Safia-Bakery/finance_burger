@@ -1,16 +1,23 @@
 from typing import Generator, AsyncGenerator
+
+from sqlalchemy import Sequence
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 # from sqlalchemy.orm import sessionmaker
 from core.config import settings
 
+
+serial_seq = Sequence('serial_number_seq', start=1, increment=1)  # Create a sequence
 
 if settings.DB_URL is None:
     raise ValueError("DB_URL environment variable is not found")
 
 
 engine = create_async_engine(settings.DB_URL, future=True, echo=True)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+with engine.connect() as conn:
+    conn.execute(serial_seq.create(engine))  # 👈 Creates the sequence explicitly
+    conn.commit()
 
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
 async def get_db():

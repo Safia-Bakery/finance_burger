@@ -1,11 +1,11 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, DateTime, func, Boolean, UUID, DECIMAL, Text, Integer, BIGINT, String, Sequence
+from sqlalchemy import Column, ForeignKey, DateTime, func, Boolean, UUID, DECIMAL, Text, Integer, BIGINT, String
 from sqlalchemy.orm import relationship
 
 from core.base import Base
+from core.session import serial_seq
 
-serial_seq = Sequence('serial_number_seq')  # Create a sequence
 
 class Requests(Base):
     __tablename__ = 'requests'
