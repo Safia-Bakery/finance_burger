@@ -54,7 +54,7 @@ async def get_role_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["read"]}))
 ):
-    roles = await RoleDAO.get_all(session=db)
+    roles = await RoleDAO.get_by_attributes(session=db)
     return roles
 
 

@@ -35,11 +35,11 @@ async def get_buyer_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["read"]}))
 ):
-    data = {
-        "name": name
-    }
-    filtered_data = {k: v for k, v in data.items() if v is not None}
-    objs = await BuyerDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
+    filters = {}
+    if name is not None:
+        filters["name"] = name
+
+    objs = await BuyerDAO.get_by_attributes(session=db, filters=filters if filters else None)
     return objs
 
 

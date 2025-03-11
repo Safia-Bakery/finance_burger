@@ -34,12 +34,13 @@ async def get_client_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
 ):
-    data = {
-        "phone": phone,
-        "tg_id": tg_id
-    }
-    filtered_data = {k: v for k, v in data.items() if v is not None}
-    objs = await ClientDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
+    filters = {}
+    if phone is not None:
+        filters["phone"] = phone
+    if tg_id is not None:
+        filters["tg_id"] = tg_id
+
+    objs = await ClientDAO.get_by_attributes(session=db, filters=filters if filters else None)
     return paginate(objs)
 
 

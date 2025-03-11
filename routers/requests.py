@@ -70,23 +70,48 @@ async def get_request_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
-    data = {
-        "number": number,
-        "client_id": client_id,
-        "department_id": department_id,
-        "expense_type_id": expense_type_id,
-        "payment_type_id": payment_type_id,
-        "sum": payment_sum,
-        "sap_code": sap_code,
-        "approved": approved,
-        "created_at": created_at,
-        "payment_time": payment_date,
-        "status": status
-    }
-    filtered_data = {k: v for k, v in data.items() if v is not None}
-    objs = await RequestDAO.get_all(
+    filters = {}
+    if number is not None:
+        filters["number"] = number
+    if client_id is not None:
+        filters["client_id"] = client_id
+    if department_id is not None:
+        filters["department_id"] = department_id
+    if expense_type_id is not None:
+        filters["expense_type_id"] = expense_type_id
+    if payment_type_id is not None:
+        filters["payment_type_id"] = payment_type_id
+    if payment_sum is not None:
+        filters["sum"] = payment_sum
+    if sap_code is not None:
+        filters["sap_code"] = sap_code
+    if approved is not None:
+        filters["approved"] = approved
+    if created_at is not None:
+        filters["created_at"] = created_at
+    if payment_date is not None:
+        filters["payment_time"] = payment_date
+    if status is not None:
+        filters["status"] = status
+
+    # data = {
+    #     "number": number,
+    #     "client_id": client_id,
+    #     "department_id": department_id,
+    #     "expense_type_id": expense_type_id,
+    #     "payment_type_id": payment_type_id,
+    #     "sum": payment_sum,
+    #     "sap_code": sap_code,
+    #     "approved": approved,
+    #     "created_at": created_at,
+    #     "payment_time": payment_date,
+    #     "status": status
+    # }
+    # filtered_data = {k: v for k, v in data.items() if v is not None}
+
+    objs = await RequestDAO.get_by_attributes(
         session=db,
-        filters=filtered_data if filtered_data else None
+        filters=filters if filters else None
     )
     return paginate(objs)
 

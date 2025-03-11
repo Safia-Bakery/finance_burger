@@ -23,6 +23,10 @@ async def get_permission_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Permissions": ["read"]}))
 ):
-    permissions = await PermissionDAO.get_all(session=db, filters={"group_id": permission_group} if permission_group else None)
+    filters = {}
+    if permission_group is not None:
+        filters["group_id"] = permission_group
+
+    permissions = await PermissionDAO.get_by_attributes(session=db, filters=filters if filters else None)
     return permissions
 

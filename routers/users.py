@@ -91,7 +91,11 @@ async def get_user_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Users": ["read"]}))
 ):
-    users = await UserDAO.get_all(session=db, filters={"is_active": is_active} if is_active else None)
+    filters = {}
+    if is_active is not None:
+        filters["is_active"] = is_active
+
+    users = await UserDAO.get_by_attributes(session=db, filters=filters if filters else None)
     return paginate(users)
 
 

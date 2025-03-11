@@ -1,5 +1,9 @@
 from typing import List, Any, Dict
 
+
+
+
+
 from sqlalchemy import select, inspect, update, delete, and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,7 +47,7 @@ class BaseDAO:
 
 
     @classmethod
-    async def get_by_attributes(cls, session: AsyncSession, filters: Dict[str, Any], first: bool = False):
+    async def get_by_attributes(cls, session: AsyncSession, filters: Dict[str, Any] = None, first: bool = False):
         """
         Retrieves records filtered by given attributes.
 
@@ -54,13 +58,8 @@ class BaseDAO:
         """
         try:
             query = select(cls.model)
-            # Dynamically load all relationships using `joinedload`
-            # for rel in inspect(cls.model).relationships:
-            #     query = query.options(joinedload(getattr(cls.model, rel.key)))
-
-            # Load all relationships recursively
-            # query = query.options(*cls._eager_load_relationships(cls.model))
-            query = query.filter_by(**filters)
+            if filters is not None:
+                query = query.filter_by(**filters)
 
             result = await session.execute(query)
             return result.scalars().first() if first else result.scalars().all()
