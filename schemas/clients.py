@@ -31,3 +31,10 @@ class UpdateClient(TunedModel):
     phone: Optional[str] = None
     language: Optional[str] = None
     is_active: Optional[bool] = None
+
+
+class CreateClient(TunedModel):
+    tg_id: int
+    fullname: str
+    language: Optional[str] = 'ru'
+    phone: str

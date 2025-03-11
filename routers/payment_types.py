@@ -28,10 +28,15 @@ async def create_payment_type(
 
 @payment_types_router.get("/payment-types", response_model=List[PaymentTypes])
 async def get_payment_type_list(
+        name: Optional[str] = None,
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"PaymentTypes": ["read"]}))
 ):
-    objs = await PaymentTypeDAO.get_all(session=db)
+    data = {
+        "name": name
+    }
+    filtered_data = {k: v for k, v in data.items() if v is not None}
+    objs = await PaymentTypeDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
     return objs
 
 

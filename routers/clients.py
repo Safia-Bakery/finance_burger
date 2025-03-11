@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.session import get_db
 from dal.dao import ClientDAO
-from schemas.clients import Clients, Client, UpdateClient
+from schemas.clients import Clients, Client, UpdateClient, CreateClient
 from utils.utils import PermissionChecker
 
 
@@ -15,6 +15,14 @@ from utils.utils import PermissionChecker
 clients_router = APIRouter()
 
 
+@clients_router.post("/clients", response_model=Client)
+async def create_client(
+        body: CreateClient,
+        db: AsyncSession = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["create"]}))
+):
+    obj = await ClientDAO.add(session=db, **body.model_dump())
+    return obj
 
 
 @clients_router.get("/clients", response_model=Page[Clients])
@@ -29,7 +37,7 @@ async def get_client_list(
         "tg_id": tg_id
     }
     filtered_data = {k: v for k, v in data.items() if v is not None}
-    objs = await ClientDAO.get_all(session=db, filters=filtered_data)
+    objs = await ClientDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
     return paginate(objs)
 
 

@@ -86,7 +86,7 @@ async def get_request_list(
     filtered_data = {k: v for k, v in data.items() if v is not None}
     objs = await RequestDAO.get_all(
         session=db,
-        filters=filtered_data
+        filters=filtered_data if filtered_data else None
     )
     return paginate(objs)
 
@@ -126,15 +126,16 @@ async def update_request(
                 "invoice_id": invoice.id if invoice is not None else None
             }
         )
-    # create logs
-    await LogDAO.add(
-        session=db,
-        **{
-            "status": body.status,
-            "request_id": updated_request.id,
-            "user_id": current_user["id"]
-        }
-    )
+    if body.status is not None:
+        # create logs
+        await LogDAO.add(
+            session=db,
+            **{
+                "status": body.status,
+                "request_id": updated_request.id,
+                "user_id": current_user["id"]
+            }
+        )
     await db.commit()
     await db.refresh(updated_request)
     return updated_request

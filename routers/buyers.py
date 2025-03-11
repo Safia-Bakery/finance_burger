@@ -31,10 +31,15 @@ async def create_buyer(
 
 @buyers_router.get("/buyers", response_model=List[Buyers])
 async def get_buyer_list(
+        name: Optional[str] = None,
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["read"]}))
 ):
-    objs = await BuyerDAO.get_all(session=db)
+    data = {
+        "name": name
+    }
+    filtered_data = {k: v for k, v in data.items() if v is not None}
+    objs = await BuyerDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
     return objs
 
 

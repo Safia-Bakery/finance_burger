@@ -31,10 +31,15 @@ async def create_supplier(
 
 @suppliers_router.get("/suppliers", response_model=List[Suppliers])
 async def get_supplier_list(
+        name: Optional[str] = None,
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Suppliers": ["read"]}))
 ):
-    objs = await SupplierDAO.get_all(session=db)
+    data = {
+        "name": name
+    }
+    filtered_data = {k: v for k, v in data.items() if v is not None}
+    objs = await SupplierDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
     return objs
 
 

@@ -28,10 +28,15 @@ async def create_department(
 
 @departments_router.get("/departments", response_model=Page[Departments])
 async def get_department_list(
+        name: Optional[str] = None,
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read"]}))
 ):
-    departments = await DepartmentDAO.get_all(session=db)
+    data = {
+        "name": name
+    }
+    filtered_data = {k: v for k, v in data.items() if v is not None}
+    departments = await DepartmentDAO.get_all(session=db, filters=filtered_data if filtered_data else None)
     return paginate(departments)
 
 

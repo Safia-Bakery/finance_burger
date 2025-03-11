@@ -48,6 +48,7 @@ class CreateRequest(TunedModel):
     buyer_id: UUID
     supplier_id: UUID
     description: Optional[str] = None
+    status: Optional[int] = 0
     sum: float
     payment_type_id: UUID
     cash: Optional[float] = None
