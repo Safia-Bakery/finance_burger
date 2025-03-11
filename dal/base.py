@@ -81,7 +81,8 @@ class BaseDAO:
 
             result = await session.execute(query)
             # return result.scalars().unique().all()
-            return result.scalars().unique().fetchall()
+            # return result.scalars().unique().fetchall()
+            return result.scalars().fetchall()
 
         except SQLAlchemyError as e:
             print(e)
