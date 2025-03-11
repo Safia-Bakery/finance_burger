@@ -22,6 +22,8 @@ async def create_client(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["create"]}))
 ):
     obj = await ClientDAO.add(session=db, **body.model_dump())
+    await db.commit()
+    await db.refresh(obj)
     return obj
 
 
