@@ -34,11 +34,13 @@ async def get_expense_type_list(
         db: AsyncSession = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"ExpenseTypes": ["read"]}))
 ):
-    data = {
-        "name": name
-    }
-    filtered_data = {k: v for k, v in data.items() if v is not None}
-    objs = await ExpenseTypeDAO.get_all(session=db, filters=filtered_data)
+    # data = {
+    #     "name": name
+    # }
+    # filtered_data = {k: v for k, v in data.items() if v is not None}
+    filters = {k: v for k, v in locals().items() if v is not None and k not in ["db", "current_user"]}
+
+    objs = await ExpenseTypeDAO.get_all(session=db, filters=filters)
     return objs
 
 
