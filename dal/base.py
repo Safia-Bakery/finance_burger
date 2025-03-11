@@ -1,6 +1,6 @@
 from typing import List, Any, Dict
 
-from sqlalchemy import select, inspect, update, delete
+from sqlalchemy import select, inspect, update, delete, and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -74,10 +74,14 @@ class BaseDAO:
         try:
             query = select(cls.model)
             if filters is not None:
-                query = query.filter_by(**filters)
+                # query = query.filter_by(**filters)
+                query = query.filter(
+                    and_(*(getattr(cls.model, k) == v for k, v in filters.items()))
+                )
 
             result = await session.execute(query)
-            return result.scalars().unique().all()
+            # return result.scalars().unique().all()
+            return result.scalars().unique().fetchall()
 
         except SQLAlchemyError as e:
             print(e)
