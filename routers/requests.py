@@ -67,7 +67,7 @@ async def get_request_list(
         approved: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
-        status: Optional[int] = None,
+        status: Optional[List[int]] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
