@@ -11,7 +11,7 @@ class Contracts(Base):
     __tablename__ = 'contracts'
     id = Column(UUID, primary_key=True, default=uuid.uuid4)
     request_id = Column(UUID, ForeignKey("requests.id", ondelete="SET NULL"), unique=True)
-    request = relationship('Requests', back_populates='contract') # lazy='select'
+    request = relationship('Requests', back_populates='contract', lazy='joined')
     file = relationship('Files', back_populates='contract', passive_deletes=True, lazy='selectin')
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
