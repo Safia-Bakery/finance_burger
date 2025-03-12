@@ -1,13 +1,8 @@
 from typing import List, Any, Dict
-
-
-
-
-
 from sqlalchemy import select, inspect, update, delete, and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 
 
 
@@ -15,39 +10,38 @@ class BaseDAO:
     model = None  # Устанавливается в дочернем классе
 
     @classmethod
-    async def add(cls, session: AsyncSession, **values):
+    def add(cls, session: Session, **values):
         # Добавить одну запись
         new_instance = cls.model(**values)
         session.add(new_instance)
         try:
-            # await session.commit()
-            await session.flush()
-            await session.refresh(new_instance)
+            session.flush()
+            # session.refresh(new_instance)
             return new_instance
         except SQLAlchemyError as e:
-            await session.rollback()
+            session.rollback()
             print("SQLAlchemyError: ", e)
             return None
 
 
 
     @classmethod
-    async def add_many(cls, session: AsyncSession, instances: List[Dict[str, Any]]):
+    def add_many(cls, session: Session, instances: List[Dict[str, Any]]):
         new_instances = [cls.model(**values) for values in instances]
         session.add_all(new_instances)
         try:
             # await session.commit()
-            await session.flush()
-            await session.refresh(new_instances)
+            session.flush()
+            # session.refresh(new_instances)
             return new_instances
         except SQLAlchemyError as e:
-            await session.rollback()
+            session.rollback()
             print("ACCESSES ERROR: \n", e)
             return None
 
 
     @classmethod
-    async def get_by_attributes(cls, session: AsyncSession, filters: Dict[str, Any] = None, first: bool = False):
+    def get_by_attributes(cls, session: Session, filters: Dict[str, Any] = None, first: bool = False):
         """
         Retrieves records filtered by given attributes.
 
@@ -61,7 +55,7 @@ class BaseDAO:
             if filters is not None:
                 query = query.filter_by(**filters)
 
-            result = await session.execute(query)
+            result = session.execute(query)
             return result.scalars().first() if first else result.scalars().all()
         except SQLAlchemyError as e:
             print("SQLAlchemyError: \n", e)
@@ -69,7 +63,7 @@ class BaseDAO:
 
 
     @classmethod
-    async def get_all(cls, session: AsyncSession, filters: dict = None):
+    def get_all(cls, session: Session, filters: dict = None):
         try:
             query = select(cls.model)
             if filters is not None:
@@ -77,7 +71,7 @@ class BaseDAO:
                 conditions = [getattr(cls.model, k) == v for k, v in filters.items()]
                 query = query.filter(and_(*conditions))
 
-            result = await session.execute(query)
+            result = session.execute(query)
             return result.scalars().unique().fetchall()
 
         except SQLAlchemyError as e:
@@ -86,7 +80,7 @@ class BaseDAO:
 
 
     @classmethod
-    async def update(cls, session: AsyncSession, data):
+    def update(cls, session: Session, data):
         try:
             obj_id = data.pop("id", None)  # Extract `id` from the dictionary
 
@@ -104,65 +98,37 @@ class BaseDAO:
                     select(cls.model)
                     .where(cls.model.id == obj_id)
                 )
-            result = await session.execute(query)
+            result = session.execute(query)
 
             # await session.commit()
-            await session.flush()
+            session.flush()
             instance = result.scalars().first()  # Get the updated instance
             if instance:
-                await session.refresh(instance)  # Refresh without re-querying
+                session.refresh(instance)  # Refresh without re-querying
 
             return instance
 
         except SQLAlchemyError as e:
-            await session.rollback()
+            session.rollback()
             print(e)
             return None
 
 
     @classmethod
-    async def delete(cls, session: AsyncSession, filters: dict):
+    def delete(cls, session: Session, filters: dict):
         try:
             query = (
                 delete(cls.model)
                 .filter_by(**filters)
                 .returning(cls.model)
             )
-            result = await session.execute(query)
+            result = session.execute(query)
             # await session.commit()
-            await session.flush()
+            session.flush()
             deleted_objects = result.scalars().unique().all()
             return deleted_objects
 
         except SQLAlchemyError as e:
-            await session.rollback()
+            session.rollback()
             print(e)
             return None
-
-
-    # @classmethod
-    # def _eager_load_relationships(cls, model, depth=2):
-    #     """
-    #     Recursively loads relationships up to a given depth.
-    #
-    #     :param model: The SQLAlchemy model to inspect.
-    #     :param depth: The depth of relationship loading (default=2, to avoid infinite recursion).
-    #     :return: List of joinedload options.
-    #     """
-    #     options = []
-    #     if depth <= 0:
-    #         return options
-    #
-    #     for rel in inspect(model).relationships:
-    #         rel_attr = getattr(model, rel.key)
-    #         loader = joinedload(rel_attr)
-    #
-    #         # If the related model has further relationships, load them as well
-    #         if rel.mapper.class_ != model:  # Prevent self-referencing loops
-    #             sub_options = cls._eager_load_relationships(rel.mapper.class_, depth - 1)
-    #             for sub_option in sub_options:
-    #                 loader = loader.joinedload(sub_option)
-    #
-    #         options.append(loader)
-    #
-    #     return options

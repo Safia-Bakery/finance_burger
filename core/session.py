@@ -1,8 +1,10 @@
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from typing import Generator, AsyncGenerator
 import asyncio
-from sqlalchemy import Sequence, text
+from sqlalchemy import Sequence, text, create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import Session, create_session, sessionmaker
+
 # from sqlalchemy.orm import sessionmaker
 from core.config import settings
 
@@ -13,17 +15,26 @@ if settings.DB_URL is None:
     raise ValueError("DB_URL environment variable is not found")
 
 
-engine = create_async_engine(settings.DB_URL, future=True, echo=True)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+# engine = create_async_engine(settings.DB_URL, future=True, echo=True)
+# async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+engine = create_engine(settings.DB_URL, future=True, echo=True)
+session_maker = sessionmaker(engine, expire_on_commit=False, autocommit=False, autoflush=False)
 # loop = asyncio.get_event_loop_policy().get_event_loop()
 
 
 @asynccontextmanager
 async def create_sequence():
     """Ensure the sequence exists before creating tables."""
-    async with async_session_maker() as session:
-        async with session.begin():  # ✅ Use session.begin() inside an async session
-            await session.execute(
+
+    @contextmanager
+    def get_session():
+        with session_maker() as session:
+            yield session  # Ensure session is properly yielded
+            session.close()
+
+    with get_session() as session:
+        with session.begin():  # ✅ Use session.begin() inside an async session
+            session.execute(
                 text("CREATE SEQUENCE IF NOT EXISTS serial_number_seq START 1 INCREMENT 1;")
             )
     yield
@@ -42,17 +53,16 @@ async def create_sequence():
 
 
 
-@asynccontextmanager
-async def get_db() -> AsyncSession:
-    async with async_session_maker() as session:
+async def get_db() -> Session:
+    with session_maker() as session:
         yield session  # Ensure session is properly yielded
-        # await session.close()
+        session.close()
 
 
 
 def connection(method):
     async def wrapper(*args, **kwargs):
-        async with async_session_maker() as session:
+        async with session_maker() as session:
             try:
                 # Явно не открываем транзакции, так как они уже есть в контексте
                 return await method(*args, session=session, **kwargs)

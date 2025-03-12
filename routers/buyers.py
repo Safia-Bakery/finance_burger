@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import BuyerDAO
@@ -19,12 +20,12 @@ buyers_router = APIRouter()
 @buyers_router.post("/buyers", response_model=Buyer)
 async def create_buyer(
         body: CreateBuyer,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["create"]}))
 ):
     created_obj = await BuyerDAO.add(session=db, **body.model_dump())
-    await db.commit()
-    await db.refresh(created_obj)
+    db.commit()
+    db.refresh(created_obj)
     return created_obj
 
 
@@ -32,7 +33,7 @@ async def create_buyer(
 @buyers_router.get("/buyers", response_model=List[Buyers])
 async def get_buyer_list(
         name: Optional[str] = None,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["read"]}))
 ):
     filters = {}
@@ -47,7 +48,7 @@ async def get_buyer_list(
 @buyers_router.get("/buyers/{id}", response_model=Buyer)
 async def get_buyer(
         id: UUID,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["read"]}))
 ):
     obj = await BuyerDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
@@ -58,13 +59,13 @@ async def get_buyer(
 @buyers_router.put("/buyers", response_model=Buyer)
 async def update_buyer(
         body: UpdateBuyer,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["update"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
     updated_obj = await BuyerDAO.update(session=db, data=body_dict)
-    await db.commit()
-    await db.refresh(updated_obj)
+    db.commit()
+    db.refresh(updated_obj)
     return updated_obj
 
 
@@ -72,10 +73,10 @@ async def update_buyer(
 @buyers_router.delete("/buyers", response_model=List[Buyers])
 async def delete_buyer(
         id: Optional[UUID],
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Buyers": ["delete"]}))
 ):
     deleted_objs = await BuyerDAO.delete(session=db, filters={"id": id})
-    await db.commit()
+    db.commit()
     return deleted_objs
 

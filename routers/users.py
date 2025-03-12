@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.session import get_db
@@ -20,7 +21,7 @@ users_router = APIRouter()
 @users_router.post('/login')
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
-        session: AsyncSession= Depends(get_db)
+        session: Session= Depends(get_db)
 ):
     user = await UserDAO.get_by_attributes(session=session, filters={"username": form_data.username}, first=True)
     if not user or not Hasher.verify_password(form_data.password, user.password):
@@ -73,14 +74,14 @@ async def get_me(
 @users_router.post("/users", response_model=GetUser)
 async def create_user(
         body: CreateUser,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Users": ["create"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
     body_dict["password"] = Hasher.get_password_hash(body.password)
     created_user = await UserDAO.add(session=db, **body_dict)
-    await db.commit()
-    await db.refresh(created_user)
+    db.commit()
+    db.refresh(created_user)
     created_user.role.permissions = [access.permission for access in created_user.role.accesses]
     return created_user
 
@@ -88,7 +89,7 @@ async def create_user(
 @users_router.get("/users", response_model=Page[GetUsers])
 async def get_user_list(
         is_active: Optional[bool] = None,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Users": ["read"]}))
 ):
     filters = {}
@@ -102,7 +103,7 @@ async def get_user_list(
 @users_router.get("/users/{id}", response_model=GetUser)
 async def get_user(
         id: UUID,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Users": ["read"]}))
 ):
     user = await UserDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
@@ -113,12 +114,12 @@ async def get_user(
 @users_router.put("/users", response_model=GetUser)
 async def update_user(
         body: UpdateUser,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Users": ["update"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
     body_dict["password"] = Hasher.get_password_hash(body.password)
     updated_user = await UserDAO.update(session=db, data=body_dict)
-    await db.commit()
-    await db.refresh(updated_user)
+    db.commit()
+    db.refresh(updated_user)
     return updated_user

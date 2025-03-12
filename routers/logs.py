@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import LogDAO
@@ -18,12 +19,12 @@ logs_router = APIRouter()
 @logs_router.post("/logs", response_model=Log)
 async def create_log(
         body: CreateLog,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Logs": ["create"]}))
 ):
     created_obj = await LogDAO.add(session=db, **body.model_dump())
-    await db.commit()
-    await db.refresh(created_obj)
+    db.commit()
+    db.refresh(created_obj)
     return created_obj
 
 

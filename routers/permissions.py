@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import PermissionDAO
@@ -20,7 +21,7 @@ permissions_router = APIRouter()
 @permissions_router.get("/permissions", response_model=List[GetPermission])
 async def get_permission_list(
         permission_group: Optional[UUID] = None,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Permissions": ["read"]}))
 ):
     filters = {}

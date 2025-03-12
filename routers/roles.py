@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import RoleDAO, AccessDAO
@@ -17,7 +18,7 @@ roles_router = APIRouter()
 @roles_router.post("/roles", response_model=GetRole)
 async def create_role(
         body: CreateRole,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["create"]}))
 ):
     permissions = body.permissions
@@ -29,8 +30,8 @@ async def create_role(
             data = {"permission_id": permission, "role_id": created_role.id}
             await AccessDAO.add(session=db, **data)
 
-        await db.commit()
-        await db.refresh(created_role)
+        db.commit()
+        db.refresh(created_role)
         role_accesses = created_role.accesses
         created_role.permissions = [access.permission for access in role_accesses]
 
@@ -41,7 +42,7 @@ async def create_role(
 @roles_router.get("/roles/{id}", response_model=GetRole)
 async def get_role(
         id: UUID,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["read"]}))
 ):
     role = await RoleDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
@@ -51,7 +52,7 @@ async def get_role(
 
 @roles_router.get("/roles", response_model=List[GetRoles])
 async def get_role_list(
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["read"]}))
 ):
     roles = await RoleDAO.get_by_attributes(session=db)
@@ -62,7 +63,7 @@ async def get_role_list(
 @roles_router.put("/roles", response_model=GetRole)
 async def update_role(
         body: UpdateRole,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["update"]}))
 ):
     permissions = body.permissions
@@ -82,8 +83,8 @@ async def update_role(
                 data = {"permission_id": permission, "role_id": updated_role.id}
                 await AccessDAO.add(session=db, **data)
 
-        await db.commit()
-        await db.refresh(updated_role)
+        db.commit()
+        db.refresh(updated_role)
         role_accesses = updated_role.accesses
         updated_role.permissions = [access.permission for access in role_accesses]
 
@@ -93,11 +94,11 @@ async def update_role(
 @roles_router.delete("/roles", response_model=List[GetRoles])
 async def delete_role(
         id: Optional[UUID],
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["delete"]}))
 ):
     deleted_roles = await RoleDAO.delete(session=db, filters={"id": id})
     # deleted_role.permissions = [access.permission for access in deleted_role.accesses]
-    await db.commit()
+    db.commit()
     return deleted_roles
 

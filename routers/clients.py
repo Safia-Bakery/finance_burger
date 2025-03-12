@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import ClientDAO
@@ -18,12 +19,12 @@ clients_router = APIRouter()
 @clients_router.post("/clients", response_model=Client)
 async def create_client(
         body: CreateClient,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["create"]}))
 ):
     obj = await ClientDAO.add(session=db, **body.model_dump())
-    await db.commit()
-    await db.refresh(obj)
+    db.commit()
+    db.refresh(obj)
     return obj
 
 
@@ -31,7 +32,7 @@ async def create_client(
 async def get_client_list(
         phone: Optional[str] = None,
         tg_id: Optional[int] = None,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
 ):
     filters = {}
@@ -48,7 +49,7 @@ async def get_client_list(
 @clients_router.get("/clients/{id}", response_model=Client)
 async def get_client(
         id: UUID,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
 ):
     obj = await ClientDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
@@ -59,13 +60,13 @@ async def get_client(
 @clients_router.put("/clients", response_model=Client)
 async def update_client(
         body: UpdateClient,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["update"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
     updated_obj = await ClientDAO.update(session=db, data=body_dict)
-    await db.commit()
-    await db.refresh(updated_obj)
+    db.commit()
+    db.refresh(updated_obj)
     return updated_obj
 
 

@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from core.session import get_db
 from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO
@@ -21,7 +22,7 @@ requests_router = APIRouter()
 @requests_router.post("/requests", response_model=Request)
 async def create_request(
         body: CreateRequest,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["create"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
@@ -48,8 +49,8 @@ async def create_request(
         }
     )
 
-    await db.commit()
-    await db.refresh(created_request)
+    db.commit()
+    db.refresh(created_request)
     return created_request
 
 
@@ -67,7 +68,7 @@ async def get_request_list(
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
         status: Optional[int] = None,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
     filters = {}
@@ -120,7 +121,7 @@ async def get_request_list(
 @requests_router.get("/requests/{id}", response_model=Request)
 async def get_request(
         id: UUID,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
     obj = await RequestDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
@@ -131,7 +132,7 @@ async def get_request(
 @requests_router.put("/requests", response_model=Request)
 async def update_request(
         body: UpdateRequest,
-        db: AsyncSession = Depends(get_db),
+        db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["update"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
@@ -161,6 +162,6 @@ async def update_request(
                 "user_id": current_user["id"]
             }
         )
-    await db.commit()
-    await db.refresh(updated_request)
+    db.commit()
+    db.refresh(updated_request)
     return updated_request

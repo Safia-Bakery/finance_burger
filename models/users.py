@@ -20,10 +20,10 @@ class Users(Base):
     password = Column(String, nullable=False)
     email = Column(String)
     is_active = Column(Boolean, default=True)
-    role_id = Column(UUID, ForeignKey("roles.id", ondelete="SET NULL"))
-    role = relationship('Roles', back_populates='users', lazy='joined')
-    department = relationship('Departments', back_populates='head', uselist=False, passive_deletes=True, lazy='select')
-    logs = relationship('Logs', back_populates='user', passive_deletes=True, lazy='select')
+    role_id = Column(UUID, ForeignKey("roles.id", ondelete="SET NULL"), nullable=True)
+    role = relationship('Roles', back_populates='users') # lazy="selectin"
+    department = relationship('Departments', back_populates='head', uselist=False, passive_deletes=True) # lazy='select'
+    logs = relationship('Logs', back_populates='user', passive_deletes=True) # lazy='select'
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
