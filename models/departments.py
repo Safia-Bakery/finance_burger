@@ -15,7 +15,7 @@ class Departments(Base):
     is_active = Column(Boolean, default=True)
     user_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"), unique=True)
     head = relationship('Users', back_populates='department', lazy='selectin')
-    requests = relationship('Requests', back_populates='department', passive_deletes=True, lazy='noload')
+    requests = relationship('Requests', back_populates='department', passive_deletes=True, lazy='select')
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
