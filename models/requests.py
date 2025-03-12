@@ -24,17 +24,17 @@ class Requests(Base):
     contract = relationship('Contracts', back_populates='request', uselist=False, passive_deletes=True, lazy='selectin')
     invoice = relationship('Invoices', back_populates='request', uselist=False, passive_deletes=True, lazy='selectin')
     client_id = Column(UUID, ForeignKey("clients.id", ondelete="SET NULL"))
-    client = relationship('Clients', back_populates='requests', lazy='selectin')
+    client = relationship('Clients', back_populates='requests') # lazy='selectin'
     department_id = Column(UUID, ForeignKey("departments.id", ondelete="SET NULL"))
-    department = relationship('Departments', back_populates='requests', lazy='selectin')
+    department = relationship('Departments', back_populates='requests') # lazy='selectin'
     expense_type_id = Column(UUID, ForeignKey("expense_types.id", ondelete="SET NULL"))
-    expense_type = relationship('ExpenseTypes', back_populates='requests', lazy='selectin')
+    expense_type = relationship('ExpenseTypes', back_populates='requests') # lazy='selectin'
     payment_type_id = Column(UUID, ForeignKey("payment_types.id", ondelete="SET NULL"))
-    payment_type = relationship('PaymentTypes', back_populates='requests', lazy='selectin')
+    payment_type = relationship('PaymentTypes', back_populates='requests') # lazy='selectin'
     buyer_id = Column(UUID, ForeignKey("buyers.id", ondelete="SET NULL"))
-    buyer = relationship('Buyers', back_populates='requests', lazy='selectin')
+    buyer = relationship('Buyers', back_populates='requests') # lazy='selectin'
     supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"))
-    supplier = relationship('Suppliers', back_populates='requests', lazy='selectin')
+    supplier = relationship('Suppliers', back_populates='requests') # lazy='selectin'
     logs = relationship('Logs', back_populates='request', cascade="all, delete", lazy='selectin')
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
