@@ -115,9 +115,9 @@ async def get_request_list(
         filters=filters if filters else None
     )
     if status is not None:
-        query = query.filter(RequestDAO.model.status.in_(status))
-
-    result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
+        result = db.execute(query.filter(RequestDAO.model.status.in_(status)).order_by(RequestDAO.model.number.desc())).scalars().all()
+    else:
+        result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
 
 
