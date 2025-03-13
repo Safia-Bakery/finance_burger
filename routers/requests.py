@@ -92,8 +92,8 @@ async def get_request_list(
         filters["created_at"] = created_at
     if payment_date is not None:
         filters["payment_time"] = payment_date
-    if status is not None:
-        filters["status"] = status
+    # if status is not None:
+    #     filters["status"] = status
 
     # data = {
     #     "number": number,
@@ -114,7 +114,7 @@ async def get_request_list(
         session=db,
         filters=filters if filters else None
     )
-    result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
+    result = db.execute(query.filter(RequestDAO.model.status.in_(status)).order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
 
 
