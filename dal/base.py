@@ -79,20 +79,22 @@ class BaseDAO:
                 for k, v in filters.items():
                     if k == "status":
                         v = [int(i) for i in re.findall(r"\d+", str(v))]
+
                     column = getattr(cls.model, k, None)
 
-                    if k == "created_at_start" or k == "created_at_finish":
-                        column = getattr(cls.model, "created_at", None)
+                    # if k == "created_at_start" or k == "created_at_finish":
+                    #     column = getattr(cls.model, "created_at", None)
 
                     if column is not None:
                         # if isinstance(v, list):  # If value is a list, use IN
                         if k == "status":  # If value is a list, use IN
                             conditions.append(column.in_(v))
-                        elif k == "created_at_start" or k == "created_at_finish":
-                            if k == "created_at_start":
-                                conditions.append(column >= v)
-                            elif k == "created_at_finish":
-                                conditions.append(column <= v)
+
+                        # elif k == "created_at_start" or k == "created_at_finish":
+                        #     if k == "created_at_start":
+                        #         conditions.append(column >= v)
+                        #     elif k == "created_at_finish":
+                        #         conditions.append(column <= v)
                         else:
                             conditions.append(column == v)
 

@@ -58,8 +58,8 @@ async def get_statistics(
     # print("expense_statistics: ", expense_statistics)
 
     data = {
-        "Статус заявок": {status: count for status, count in requests_statuses},
-        "Заявки на оплату": today_paying_requests[0][0],
-        "Статистика расходов": expense_statistics[0][0],
+        "request_statuses": {status: count for status, count in requests_statuses},
+        "requests_to_pay": today_paying_requests[0][0],
+        "expense_statistics": expense_statistics[0][0],
     }
     return data
