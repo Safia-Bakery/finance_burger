@@ -65,7 +65,7 @@ class BaseDAO:
     @classmethod
     async def get_all(cls, session: Session, filters: dict = None):
         try:
-            query = select(cls.model)
+            query = session.query(cls.model)
             if filters is not None:
                 # conditions = [
                 #     getattr(cls.model, k).in_(v) if k == "status" else getattr(cls.model, k) == v
