@@ -67,8 +67,10 @@ class BaseDAO:
         try:
             query = select(cls.model)
             if filters is not None:
-                # query = query.filter_by(**filters)
-                conditions = [getattr(cls.model, k) == v if k != "status" else getattr(cls.model, k).in_(v) for k, v in filters.items()]
+                conditions = [
+                    getattr(cls.model, k).in_(v) if k == "status" else getattr(cls.model, k) == v
+                    for k, v in filters.items()
+                ]
                 query = query.filter(and_(*conditions))
 
             # result = session.execute(query)
