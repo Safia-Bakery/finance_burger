@@ -65,7 +65,8 @@ async def get_request_list(
         payment_sum: Optional[float] = None,
         sap_code: Optional[str] = None,
         approved: Optional[bool] = None,
-        created_at: Optional[date] = None,
+        created_at_start: Optional[date] = None,
+        created_at_finish: Optional[date] = None,
         payment_date: Optional[date] = None,
         status: Optional[str] = None,
         db: Session = Depends(get_db),
@@ -88,8 +89,13 @@ async def get_request_list(
         filters["sap_code"] = sap_code
     if approved is not None:
         filters["approved"] = approved
-    if created_at is not None:
-        filters["created_at"] = created_at
+    # if created_at is not None:
+    #     filters["created_at"] = created_at
+    if created_at_start is not None:
+        filters["created_at_start"] = created_at_start
+    if created_at_finish is not None:
+        filters["created_at_finish"] = created_at_finish
+
     if payment_date is not None:
         filters["payment_time"] = payment_date
     if status is not None:
@@ -114,9 +120,6 @@ async def get_request_list(
         session=db,
         filters=filters if filters else None
     )
-    # if status is not None:
-    #     result = db.query(query.filter(RequestDAO.model.status.in_(status)).order_by(RequestDAO.model.number.desc())).all()
-    # else:
     result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
 
