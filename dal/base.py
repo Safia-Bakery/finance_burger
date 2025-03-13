@@ -71,7 +71,7 @@ class BaseDAO:
             if filters is not None:
                 conditions = []
                 for k, v in filters.items():
-                    if k == "status":
+                    if k == "status" and isinstance(v, str):
                         v = [int(i) for i in re.findall(r"\d+", str(v))]
 
                     column = getattr(cls.model, k, None)
