@@ -67,7 +67,7 @@ async def get_request_list(
         approved: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
-        status: Optional[List[int]] = None,
+        status: Optional[str] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
@@ -92,8 +92,8 @@ async def get_request_list(
         filters["created_at"] = created_at
     if payment_date is not None:
         filters["payment_time"] = payment_date
-    # if status is not None:
-    #     filters["status"] = status
+    if status is not None:
+        filters["status"] = status
 
     # data = {
     #     "number": number,
@@ -114,10 +114,10 @@ async def get_request_list(
         session=db,
         filters=filters if filters else None
     )
-    if status is not None:
-        result = db.query(query.filter(RequestDAO.model.status.in_(status)).order_by(RequestDAO.model.number.desc())).all()
-    else:
-        result = db.query(query.order_by(RequestDAO.model.number.desc())).all()
+    # if status is not None:
+    #     result = db.query(query.filter(RequestDAO.model.status.in_(status)).order_by(RequestDAO.model.number.desc())).all()
+    # else:
+    result = db.execute(query.order_by(RequestDAO.model.number.desc())).all()
     return paginate(result)
 
 

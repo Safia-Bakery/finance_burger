@@ -1,3 +1,4 @@
+import re
 from typing import List, Any, Dict
 from sqlalchemy import select, inspect, update, delete, and_
 from sqlalchemy.exc import SQLAlchemyError
@@ -65,7 +66,7 @@ class BaseDAO:
     @classmethod
     async def get_all(cls, session: Session, filters: dict = None):
         try:
-            query = session.query(cls.model)
+            query = select(cls.model)
             if filters is not None:
                 # conditions = [
                 #     getattr(cls.model, k).in_(v) if k == "status" else getattr(cls.model, k) == v
@@ -75,6 +76,8 @@ class BaseDAO:
 
                 conditions = []
                 for k, v in filters.items():
+                    if k == "status":
+                        v = [int(i) for i in re.findall(r"\d+", str(v))]
                     column = getattr(cls.model, k, None)
                     if column is not None:
                         if isinstance(v, list):  # If value is a list, use IN
