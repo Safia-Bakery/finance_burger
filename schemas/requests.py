@@ -27,12 +27,13 @@ class Requests(TunedModel):
     created_at: Optional[datetime] = None
     payment_time: Optional[datetime] = None
     status: Optional[int] = None
-
-
-class Request(Requests):
     buyer: Optional[Buyers] = None
     supplier: Optional[Suppliers] = None
     payment_card: Optional[str] = None
+    description: Optional[str] = None
+
+
+class Request(Requests):
     comment: Optional[str] = None
     payer_company: Optional[str] = None
     payment_time: Optional[date] = None
