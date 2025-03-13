@@ -110,7 +110,7 @@ async def get_request_list(
     # }
     # filtered_data = {k: v for k, v in data.items() if v is not None}
 
-    objs = await RequestDAO.get_by_attributes(
+    objs = await RequestDAO.get_all(
         session=db,
         filters=filters if filters else None
     )

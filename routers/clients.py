@@ -32,6 +32,7 @@ async def create_client(
 async def get_client_list(
         phone: Optional[str] = None,
         tg_id: Optional[int] = None,
+        is_active: Optional[bool] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
 ):
@@ -40,6 +41,8 @@ async def get_client_list(
         filters["phone"] = phone
     if tg_id is not None:
         filters["tg_id"] = tg_id
+    if is_active is not None:
+        filters["is_active"] = is_active
 
     objs = await ClientDAO.get_by_attributes(session=db, filters=filters if filters else None)
     return paginate(objs)
