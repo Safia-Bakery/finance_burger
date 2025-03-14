@@ -18,7 +18,7 @@ accounting_router = APIRouter()
 
 
 @accounting_router.get("/accounting", response_model=Page[Requests])
-async def get_statistics(
+async def get_accountings(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):

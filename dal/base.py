@@ -1,7 +1,7 @@
 import re
 from datetime import date
 from typing import List, Any, Dict
-from sqlalchemy import select, inspect, update, delete, and_
+from sqlalchemy import select, inspect, update, delete, and_, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, Session
@@ -80,21 +80,26 @@ class BaseDAO:
                     #     column = getattr(cls.model, "created_at", None)
 
                     if column is not None:
-                        # if isinstance(v, list):  # If value is a list, use IN
-                        if k == "status" and isinstance(v, list):
-                            conditions.append(column.in_(v))
-                        elif k == "status":
-                            conditions.append(column != v)
+                        if k == "status":
+                            if isinstance(v, list):
+                                conditions.append(column.in_(v))
+                            else:
+                                conditions.append(column != v)
                         elif k == "payment_time":
-                            conditions.append(column.isnot(v))
+                            if v is None:
+                                conditions.append(column.isnot(v))
+                            else:
+                                conditions.append(func.date(column) == v)
+                        elif k == "created_at":
+                            conditions.append(func.date(column) == v)
+                        else:
+                            conditions.append(column == v)
 
                         # elif k == "created_at_start" or k == "created_at_finish":
                         #     if k == "created_at_start":
                         #         conditions.append(column >= v)
                         #     elif k == "created_at_finish":
                         #         conditions.append(column <= v)
-                        else:
-                            conditions.append(column == v)
 
                 if conditions:
                     query = query.filter(and_(*conditions))  # Apply all conditions

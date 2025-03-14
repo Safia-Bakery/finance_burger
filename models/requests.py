@@ -31,10 +31,12 @@ class Requests(Base):
     expense_type = relationship('ExpenseTypes', back_populates='requests') # lazy="selectin"
     payment_type_id = Column(UUID, ForeignKey("payment_types.id", ondelete="SET NULL"), nullable=True)
     payment_type = relationship('PaymentTypes', back_populates='requests') # lazy="selectin"
-    buyer_id = Column(UUID, ForeignKey("buyers.id", ondelete="SET NULL"), nullable=True)
-    buyer = relationship('Buyers', back_populates='requests') # lazy="selectin"
-    supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True)
-    supplier = relationship('Suppliers', back_populates='requests') # lazy="selectin"
+    # buyer_id = Column(UUID, ForeignKey("buyers.id", ondelete="SET NULL"), nullable=True)
+    # buyer = relationship('Buyers', back_populates='requests') # lazy="selectin"
+    buyer = Column(String, nullable=False)
+    supplier = Column(String, nullable=False)
+    # supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True)
+    # supplier = relationship('Suppliers', back_populates='requests') # lazy="selectin"
     logs = relationship('Logs', back_populates='request', cascade="all, delete") # lazy="selectin"
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

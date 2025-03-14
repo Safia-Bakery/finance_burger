@@ -27,8 +27,10 @@ class Requests(TunedModel):
     created_at: Optional[datetime] = None
     payment_time: Optional[datetime] = None
     status: Optional[int] = None
-    buyer: Optional[Buyers] = None
-    supplier: Optional[Suppliers] = None
+    # buyer: Optional[Buyers] = None
+    # supplier: Optional[Suppliers] = None
+    buyer: Optional[str] = None
+    supplier: Optional[str] = None
     payment_card: Optional[str] = None
     description: Optional[str] = None
 
@@ -46,8 +48,10 @@ class Request(Requests):
 class CreateRequest(TunedModel):
     department_id: UUID
     expense_type_id: UUID
-    buyer_id: UUID
-    supplier_id: UUID
+    # buyer_id: UUID
+    # supplier_id: UUID
+    buyer: str
+    supplier: str
     client_id: UUID
     description: Optional[str] = None
     status: Optional[int] = 0
