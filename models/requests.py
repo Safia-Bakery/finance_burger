@@ -33,8 +33,8 @@ class Requests(Base):
     payment_type = relationship('PaymentTypes', back_populates='requests') # lazy="selectin"
     # buyer_id = Column(UUID, ForeignKey("buyers.id", ondelete="SET NULL"), nullable=True)
     # buyer = relationship('Buyers', back_populates='requests') # lazy="selectin"
-    buyer = Column(String, nullable=False)
-    supplier = Column(String, nullable=False)
+    buyer = Column(String, nullable=True)
+    supplier = Column(String, nullable=True)
     # supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True)
     # supplier = relationship('Suppliers', back_populates='requests') # lazy="selectin"
     logs = relationship('Logs', back_populates='request', cascade="all, delete") # lazy="selectin"
