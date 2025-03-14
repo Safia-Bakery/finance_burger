@@ -10,7 +10,7 @@ from schemas.files import GetFile
 class Contract(TunedModel):
     id: UUID
     request_id: UUID
-    file: GetFile
+    file: Optional[list[GetFile]]=None
     created_at: datetime
 
 

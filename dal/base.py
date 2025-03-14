@@ -1,11 +1,14 @@
 import re
 from datetime import date
 from typing import List, Any, Dict
+
+from fastapi_pagination import request
 from sqlalchemy import select, inspect, update, delete, and_, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, Session
+from sqlalchemy.orm import joinedload, Session, contains_eager
 
+from models import Requests, Contracts, Files
 
 
 class BaseDAO:
@@ -167,3 +170,42 @@ class BaseDAO:
             session.rollback()
             print(e)
             return None
+
+    @classmethod
+    def _eager_load_relationships(cls, model, depth=2):
+        """
+        Recursively loads relationships up to a given depth.
+
+        :param model: The SQLAlchemy model to inspect.
+        :param depth: The depth of relationship loading (default=2, to avoid infinite recursion).
+        :return: List of joinedload options.
+        """
+        options = []
+        if depth <= 0:
+            return options
+
+        for rel in inspect(model).relationships:
+            # rel_attr = getattr(model, rel.key)
+            # loader = joinedload(rel_attr)
+            #
+            # # If the related model has further relationships, load them as well
+            # if rel.mapper.class_ != model:  # Prevent self-referencing loops
+            #     sub_options = cls._eager_load_relationships(rel.mapper.class_, depth - 1)
+            #     for sub_option in sub_options:
+            #         loader = loader.joinedload(sub_option)
+            #
+            # options.append(loader)
+            if hasattr(model, rel.key):  # ✅ Check if relationship exists in the model
+                rel_attr = getattr(model, rel.key)
+                loader = joinedload(rel_attr)
+
+                if depth > 1 and rel.mapper.class_ != model:  # Prevent self-referencing loops
+                    sub_options = cls._eager_load_relationships(rel.mapper.class_, depth - 1)
+                    for sub_option in sub_options:
+                        loader = loader.options(sub_option)  # ✅ Fix nested loading
+
+                options.append(loader)
+            else:
+                print(f"Warning: Relationship '{rel.key}' does not exist on {model}")
+
+        return options
