@@ -138,7 +138,7 @@ async def request_status_update():
         expired_requests = session.query(RequestDAO.model).filter(
             and_(
                 RequestDAO.model.status == 1,
-                func.date(RequestDAO.model.payment_time) > today
+                func.date(RequestDAO.model.payment_time) < today
             )
         ).all()
         for request in expired_requests:
