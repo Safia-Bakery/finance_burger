@@ -36,7 +36,7 @@ async def get_statistics(
     ).filter(
         and_(
             RequestDAO.model.status == 2,
-            func.date(RequestDAO.model.created_at) == datetime.now().date()
+            func.date(RequestDAO.model.payment_time) == datetime.now().date()
         )
     ).all()
     # print("today_paying_requests: ", today_paying_requests)
@@ -45,7 +45,7 @@ async def get_statistics(
         coalesce(func.sum(RequestDAO.model.sum), 0)
     ).filter(
         and_(
-            RequestDAO.model.status == 2,
+            RequestDAO.model.status == 5,
             RequestDAO.model.created_at.between(start_date, finish_date)
         )
     ).all()
