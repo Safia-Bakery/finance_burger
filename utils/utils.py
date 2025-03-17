@@ -61,13 +61,13 @@ def create_access_token(data: dict):
 
 
 async def get_current_user(token: str = Depends(reuseable_oauth), session: AsyncSession = Depends(get_db)):
+    print('current tokent')
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username = payload.get('sub')
         expire_datetime = payload.get('exp')
         user = payload.get('user')
         print("username: ", username)
-        print('last ',token)
         if username == settings.BOT_USER:
             print("user is entering",settings.BOT_USER)
             return user
