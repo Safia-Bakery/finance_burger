@@ -105,10 +105,16 @@ class PermissionChecker:
         self.required_permissions = required_permissions
 
     def __call__(self, user: dict = Depends(get_current_user)) -> dict:
-        permissions = user['permissions']
-        key, value = next(iter(self.required_permissions.items()))
-        permissions = permissions.get(key)
-        need_permissions = list(set(value) & set(permissions)) if permissions else None
+        # permissions = user['permissions']
+        # key, value = next(iter(self.required_permissions.items()))
+        # permissions = permissions.get(key)
+        # need_permissions = list(set(value) & set(permissions)) if permissions else None
+
+        user_permissions = user['permissions']
+        permission_group, required_permissions = next(iter(self.required_permissions.items()))
+        user_permissions = user_permissions.get(permission_group, None)
+        need_permissions = set(required_permissions).issubset(user_permissions) if user_permissions else None
+
         if not need_permissions:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

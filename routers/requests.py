@@ -2,7 +2,7 @@ from datetime import datetime, date
 from typing import Optional, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page, paginate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -140,6 +140,14 @@ async def update_request(
     body_dict.pop("invoice", None)
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
     request_payment_time = request.payment_time
+    if "reject" not in current_user["permissions"]["Requests"]:
+        body_dict.pop("status", None)
+        body_dict.pop("comment", None)
+        raise HTTPException(status_code=404, detail="У вас нет прав отменить статус заявки !")
+    if "approve" not in current_user["permissions"]["Requests"]:
+        body_dict.pop("approved", None)
+        raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку !")
+
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
     db.commit()
@@ -191,7 +199,7 @@ async def update_request(
                 "inline_keyboard": [
                     [
                         {
-                            "text": f"Посмотреть фото №{i}",
+                            "text": f"Посмотреть фото №{i+1}",
                             "url": f"{settings.BASE_URL}/{file_path if updated_request.invoice else ''}"
                         } for i, file_path in enumerate(file.file_paths)
                     ] for file in updated_request.invoice.file

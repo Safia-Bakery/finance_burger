@@ -91,14 +91,14 @@ async def update_role(
     return updated_role
 
 
-@roles_router.delete("/roles", response_model=List[GetRoles])
-async def delete_role(
-        id: Optional[UUID],
-        db: Session = Depends(get_db),
-        current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["delete"]}))
-):
-    deleted_roles = await RoleDAO.delete(session=db, filters={"id": id})
-    # deleted_role.permissions = [access.permission for access in deleted_role.accesses]
-    db.commit()
-    return deleted_roles
+# @roles_router.delete("/roles", response_model=List[GetRoles])
+# async def delete_role(
+#         id: Optional[UUID],
+#         db: Session = Depends(get_db),
+#         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["delete"]}))
+# ):
+#     deleted_roles = await RoleDAO.delete(session=db, filters={"id": id})
+#     # deleted_role.permissions = [access.permission for access in deleted_role.accesses]
+#     db.commit()
+#     return deleted_roles
 

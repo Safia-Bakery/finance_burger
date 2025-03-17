@@ -30,6 +30,7 @@ async def create_client(
 
 @clients_router.get("/clients", response_model=Page[Clients])
 async def get_client_list(
+        fullname: Optional[str] = None,
         phone: Optional[str] = None,
         tg_id: Optional[int] = None,
         is_active: Optional[bool] = None,
@@ -37,6 +38,8 @@ async def get_client_list(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
 ):
     filters = {}
+    if fullname is not None:
+        filters["fullname"] = fullname
     if phone is not None:
         filters["phone"] = phone
     if tg_id is not None:

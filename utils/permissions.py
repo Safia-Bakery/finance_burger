@@ -63,6 +63,8 @@ permission_groups = {
         "read": "read_request",
         "update": "update_request",
         "delete": "delete_request",
+        "reject": "reject_request",
+        "approve": "approve_request"
     },
     "Contracts": {
         "create": "create_contract",
