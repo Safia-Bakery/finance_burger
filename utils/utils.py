@@ -159,5 +159,6 @@ def send_telegram_message(chat_id, message_text, keyboard: Optional[dict] = None
     if response.status_code == 200:
         return response
     else:
+        print("Response text: ", response.text)
         return None
 
