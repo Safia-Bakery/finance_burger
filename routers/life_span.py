@@ -54,19 +54,25 @@ async def create_permissions_lifespan():
 
     with get_session() as session:
         for key, value in permission_groups.items():
-            permission_group = await PermissionGroupDAO.add(session=session, **{"name": key})
-            # print("created permission_group: ", permission_group)
-            if permission_group is not None:
+            permission_group = await PermissionGroupDAO.get_by_attributes(session=session, filters={"name": key}, first=True)
+            if permission_group:
+                permission_group_id = permission_group.id
+            else:
+                permission_group = await PermissionGroupDAO.add(session=session, **{"name": key})
                 permission_group_id = permission_group.id
 
-                for name, action in value.items():
-                    permission = await PermissionDAO.get_by_attributes(session=session, filters={"group_id": permission_group_id, "name": name}, first=True)
-                    # print("permission: ", permission)
-                    if permission is None:
-                        created_permission = await PermissionDAO.add(session=session, **{"name": name, "action": action, "group_id": permission_group_id})
-                        # print("created permission: ", created_permission)
+            # print("created permission_group: ", permission_group)
+            # if permission_group is not None:
+            #     permission_group_id = permission_group.id
 
-                session.commit()
+            for name, action in value.items():
+                permission = await PermissionDAO.get_by_attributes(session=session, filters={"group_id": permission_group_id, "name": name}, first=True)
+                # print("permission: ", permission)
+                if permission is None:
+                    created_permission = await PermissionDAO.add(session=session, **{"name": name, "action": action, "group_id": permission_group_id})
+                    # print("created permission: ", created_permission)
+
+            session.commit()
 
     yield  #--------------  HERE YOU CAN WRITE LOG ON CLOSING AFTER YIELD ------------
 
