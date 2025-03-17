@@ -192,9 +192,9 @@ async def update_request(
                     [
                         {
                             "text": "Посмотреть фото",
-                            "url": f"{settings.BASE_URL}{updated_request.invoice.file.file_paths if updated_request.invoice else ''}"
+                            "url": f"{settings.BASE_URL}{file.file_paths if updated_request.invoice else ''}"
                         }
-                    ]
+                    ] for file in updated_request.invoice.file
                 ]
             }
 
