@@ -68,6 +68,7 @@ async def get_current_user(token: str = Depends(reuseable_oauth), session: Async
         user = payload.get('user')
         print("username: ", username)
         if username == settings.BOT_USER:
+            print("user is entering",settings.BOT_USER)
             return user
         if datetime.fromtimestamp(expire_datetime) < datetime.now():
             raise HTTPException(
@@ -77,7 +78,7 @@ async def get_current_user(token: str = Depends(reuseable_oauth), session: Async
             )
 
     except Exception as e:
-        print(e)
+        print("this is the error",e)
         raise CREDENTIALS_EXCEPTION
 
     # user = await _get_user_by_username(session=session, username=username)
