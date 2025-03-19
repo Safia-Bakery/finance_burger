@@ -20,6 +20,7 @@ from routers.contracts import contracts_router
 from routers.logs import logs_router
 from routers.statistics import statistics_router
 from routers.accounting import accounting_router
+from routers.settings import settings_router
 
 
 # app = FastAPI(
@@ -50,6 +51,7 @@ main_router.include_router(accounting_router, tags=['Accounting'])
 main_router.include_router(logs_router, tags=['Logs'])
 main_router.include_router(files_router, tags=['Files'])
 main_router.include_router(contracts_router, tags=['Contracts'])
+main_router.include_router(settings_router, tags=['Settings'])
 
 
 
