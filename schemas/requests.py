@@ -77,6 +77,7 @@ class UpdateRequest(TunedModel):
     approve_comment: Optional[str] = None
     status: Optional[int] = None
     payment_time: Optional[date] = None
+    payment_type_id: Optional[UUID] = None
     comment: Optional[str] = None
     payer_company: Optional[str] = None
     invoice: Optional[bool] = None
