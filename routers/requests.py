@@ -215,7 +215,7 @@ async def update_request(
         number = updated_request.number
         if status == 1: # Принят
             if request.payment_type_id == "822e49f7-f54e-481e-997d-e4cb81b061e1":
-                chat_id = None  # chat id of group
+                chat_id = settings.CHAT_GROUP  # chat id of group
                 try:
                     send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
                 except Exception as e:
