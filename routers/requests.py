@@ -203,7 +203,7 @@ async def update_request(
             f"🛒 Закупщик: {request.buyer}\n"
             f"💰 Тип затраты: {request.expense_type.name}\n"
             f"🏢 Поставщик: {request.supplier}\n\n"
-            f"💲 Стоимость: {int(request.sum)} сум\n"
+            f"💲 Стоимость: {int(request.sum)}\n"
             f"💵 Валюта: {request.currency}\n"
             f"💳 Тип оплаты: {request.payment_type.name}\n"
             f"💳 Карта перевода: {request.payment_card if request.payment_card is not None else ''}\n"
