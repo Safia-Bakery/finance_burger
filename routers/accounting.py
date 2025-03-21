@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
@@ -23,7 +24,7 @@ async def get_accounting(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
 ):
     filters = {
-        "payment_type_id": "88a747c1-5616-437c-ac71-a02b30287ee8",
+        "payment_type_id": UUID("88a747c1-5616-437c-ac71-a02b30287ee8"),
         "payment_time": None,
         "status": [1, 2, 3, 5],
         "to_accounting": True
