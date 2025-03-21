@@ -209,12 +209,12 @@ async def update_request(
             f"💳 Карта перевода: {request.payment_card if request.payment_card is not None else ''}\n"
             f"📜 № Заявки в SAP: {request.sap_code}\n\n"
             f"📝 Комментарии: {request.description}\n\n"
-            f"📃 Документ оплаты 👇"
+            + (f"📃 Документ оплаты 👇\n" if request.invoice else "")
         )
         status = updated_request.status
         number = updated_request.number
         if status == 1: # Принят
-            if request.payment_type_id == "822e49f7-f54e-481e-997d-e4cb81b061e1":
+            if request.payment_type_id == UUID("822e49f7-f54e-481e-997d-e4cb81b061e1"): # cash
                 chat_id = settings.CHAT_GROUP  # chat id of group
                 try:
                     send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)

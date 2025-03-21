@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 from fastapi import APIRouter, UploadFile
 from fastapi import Depends, File
@@ -32,5 +32,31 @@ async def upload_files(
                     break
                 buffer.write(chunk)
         file_paths.append(file_path)
+
+    return {"file_paths": file_paths}
+
+
+@files_router.post("/files/upload/bot")
+async def upload_bot_files(
+        file: UploadFile = File(...),
+        # db: Session = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Files": ["create"]}))
+):
+    base_dir = "files"
+    date_dir = datetime.now().strftime("%Y/%m/%d")  # Create a path like "2025/03/10"
+    save_dir = os.path.join(base_dir, date_dir)
+
+    os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
+
+    file_paths = []
+
+    file_path = os.path.join(save_dir, file.filename)
+    with open(file_path, "wb") as buffer:
+        while True:
+            chunk = await file.read(1024)
+            if not chunk:
+                break
+            buffer.write(chunk)
+    file_paths.append(file_path)
 
     return {"file_paths": file_paths}

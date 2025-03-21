@@ -33,11 +33,12 @@ class Requests(TunedModel):
     supplier: Optional[str] = None
     payment_card: Optional[str] = None
     description: Optional[str] = None
+    currency: Optional[str] = None
+
 
 
 class Request(Requests):
     comment: Optional[str] = None
-    currency: Optional[str] = None
     to_accounting: Optional[bool] = None
     approve_comment: Optional[str] = None
     payer_company: Optional[str] = None
