@@ -159,7 +159,7 @@ async def update_request(
             raise HTTPException(status_code=404, detail="Тип оплаты не является перечислением !")
 
     if request.payment_type_id == UUID("88a747c1-5616-437c-ac71-a02b30287ee8"):
-        if request.status != 0:
+        if body.status == 5:
             if request.to_accounting is False:
                 body_dict.pop("status", None)
                 raise HTTPException(status_code=404, detail="Сначала отправьте в бухгалтерию !")
@@ -193,8 +193,7 @@ async def update_request(
     if body.approved is True:
         chat_id = updated_request.client.tg_id
         number = updated_request.number
-        message_text = (f"Ваша заявка #{number}s одобрена"
-                        f"{updated_request.comment}")
+        message_text = f"Ваша заявка #{number}s одобрена !"
         try:
             send_telegram_message(chat_id=chat_id, message_text=message_text)
         except Exception as e:
