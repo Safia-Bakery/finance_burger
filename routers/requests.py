@@ -152,15 +152,20 @@ async def update_request(
             body_dict.pop("approve_comment", None)
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку !")
 
+
     if body.to_accounting is True:
         if request.payment_type_id != UUID("88a747c1-5616-437c-ac71-a02b30287ee8"):
             body_dict.pop("to_accounting", None)
             raise HTTPException(status_code=404, detail="Тип оплаты не является перечислением !")
 
     if request.payment_type_id == UUID("88a747c1-5616-437c-ac71-a02b30287ee8"):
-        if request.to_accounting is False:
-            body_dict.pop("status", None)
-            raise HTTPException(status_code=404, detail="Сначала отправьте в бухгалтерию !")
+        if request.status != 0:
+            if request.to_accounting is False:
+                body_dict.pop("status", None)
+                raise HTTPException(status_code=404, detail="Сначала отправьте в бухгалтерию !")
+            if request.invoice is None:
+                body_dict.pop("status", None)
+                raise HTTPException(status_code=404, detail="Сначала загрузите квитанцию оплаты !")
 
 
     updated_request = await RequestDAO.update(session=db, data=body_dict)
