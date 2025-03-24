@@ -103,8 +103,10 @@ async def upload(request: Request):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Filename header is missing')
     try:
-        # filename = unquote(filename)
-        filename = generate_random_string(10)
+        filename = unquote(filename)
+        file_extension = os.path.splitext(filename)[1]
+
+        filename = generate_random_string(10)+file_extension
         filepath = os.path.join(save_dir, os.path.basename(filename))
         file_ = FileTarget(filepath, validator=MaxSizeValidator(MAX_FILE_SIZE))
         data = ValueTarget()
