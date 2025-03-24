@@ -128,7 +128,5 @@ async def upload(request: Request):
     if not file_.multipart_filename:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail='File is missing')
 
-    print(data.value.decode())
-    print(file_.multipart_filename)
 
-    return {"message": f"Successfuly uploaded {filename}"}
+    return {"file_paths": [filepath]}
