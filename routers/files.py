@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from typing import List, Union
+from utils.utils import generate_random_string
 
 from fastapi import APIRouter, UploadFile
 from fastapi import Depends, File
@@ -102,8 +103,8 @@ async def upload(request: Request):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             detail='Filename header is missing')
     try:
-        filename = unquote(filename)
-        filename = filename.replace(' ', '')
+        # filename = unquote(filename)
+        filename = generate_random_string(10)
         filepath = os.path.join(save_dir, os.path.basename(filename))
         file_ = FileTarget(filepath, validator=MaxSizeValidator(MAX_FILE_SIZE))
         data = ValueTarget()

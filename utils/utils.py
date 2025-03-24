@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timedelta
 from typing import Optional
 
+import string
+import random
 import requests
 from fastapi import Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer
@@ -192,3 +194,9 @@ def send_telegram_document(chat_id, file_path):
         print("Response text: ", response.text)
         return None
 
+
+
+
+def generate_random_string(length=10):
+    characters = string.ascii_letters + string.digits  # A-Z, a-z, 0-9
+    return ''.join(random.choices(characters, k=length))
