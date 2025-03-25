@@ -59,6 +59,7 @@ async def upload_bot_files(
     os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
 
     file_paths = []
+        
 
     file_path = os.path.join(save_dir, file.filename)
     with open(file_path, "wb") as buffer:
@@ -98,6 +99,7 @@ async def upload(request: Request):
     base_dir = "files"
     date_dir = datetime.now().strftime("%Y/%m/%d")  # Create a path like "2025/03/10"
     save_dir = os.path.join(base_dir, date_dir)
+    os.makedirs(save_dir, exist_ok=True)  # Ensure the directory exists
 
     if not filename:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
