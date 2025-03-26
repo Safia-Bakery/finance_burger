@@ -125,7 +125,7 @@ async def upload(request: Request):
         error_sender(error_message=f"FINANCE BACKEND: \n{e}")
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                             detail=f'Maximum request body size limit ({MAX_REQUEST_BODY_SIZE} bytes) exceeded ({e.body_len} bytes read)')
-    except streaming_form_data.validators.ValidationError:
+    except streaming_form_data.validators.ValidationError as e:
         error_sender(error_message=f"FINANCE BACKEND: \n{e}")
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                             detail=f'Maximum file size limit ({MAX_FILE_SIZE} bytes) exceeded')

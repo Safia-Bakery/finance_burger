@@ -11,7 +11,7 @@ from core.config import settings
 from core.session import get_db
 from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO
 from schemas.requests import Requests, Request, UpdateRequest, CreateRequest
-from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document
+from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender
 
 requests_router = APIRouter()
 
@@ -240,11 +240,14 @@ async def update_request(
                 try:
                     send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
                 except Exception as e:
-                    print("Sending Error: ", e)
+                    error_sender(error_message=f"FINANCE BACKEND: \n{e}")
 
             message_text = (f"Ваша заявка #{number}s принята со стороны  финансового отдела.\n"
                             f"Срок оплаты {updated_request.payment_time.strftime('%d.%m.%Y')}")
-            send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
+            try:
+                send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
+            except Exception as e:
+                error_sender(error_message=f"FINANCE BACKEND: \n{e}")
 
         elif status == 4: # Отменен
             message_text = (f"Ваша заявка #{number}s отменена по причине:\n"
