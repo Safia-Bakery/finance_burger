@@ -235,19 +235,19 @@ async def update_request(
         status = updated_request.status
         number = updated_request.number
         if status == 1: # Принят
-            if request.payment_type_id == UUID("822e49f7-f54e-481e-997d-e4cb81b061e1"): # cash
-                chat_id = settings.CHAT_GROUP  # chat id of group
-                try:
-                    send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
-                except Exception as e:
-                    error_sender(error_message=f"FINANCE BACKEND: \n{e}")
-
             message_text = (f"Ваша заявка #{number}s принята со стороны  финансового отдела.\n"
                             f"Срок оплаты {updated_request.payment_time.strftime('%d.%m.%Y')}")
             try:
                 send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
             except Exception as e:
                 error_sender(error_message=f"FINANCE BACKEND: \n{e}")
+
+            if request.payment_type_id == UUID("822e49f7-f54e-481e-997d-e4cb81b061e1"): # cash
+                chat_id = settings.CHAT_GROUP  # chat id of group
+                try:
+                    send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
+                except Exception as e:
+                    error_sender(error_message=f"FINANCE BACKEND: \n{e}")
 
         elif status == 4: # Отменен
             message_text = (f"Ваша заявка #{number}s отменена по причине:\n"
