@@ -18,6 +18,7 @@ class Requests(Base):
     payment_time = Column(DateTime(timezone=True))
     payment_card = Column(String)
     currency = Column(String)
+    exchange_rate = Column(DECIMAL)
     cash = Column(DECIMAL)
     description = Column(Text)
     comment = Column(Text)
