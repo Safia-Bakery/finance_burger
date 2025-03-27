@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -13,10 +13,12 @@ class Departments(TunedModel):
     name: str
     is_active: Optional[bool]
     head: Optional[GetUsers] = None
+    total_budget: Optional[float] = None
     created_at: Optional[datetime]
 
 
 class Department(Departments):
+    monthly_budget: Optional[List[dict]] = None
     updated_at: Optional[datetime] = None
 
 

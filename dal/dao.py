@@ -1,3 +1,8 @@
+from typing import Dict, Any
+
+from sqlalchemy import func, and_, text
+from sqlalchemy.orm import Session
+
 from dal.base import BaseDAO
 from models.roles import Roles
 from models.permission_groups import PermissionGroups
@@ -15,6 +20,8 @@ from models.contracts import Contracts
 from models.invoices import Invoices
 from models.files import Files
 from models.logs import Logs
+from models.budgets import Budgets
+from models.transactions import Transactions
 
 
 
@@ -40,6 +47,43 @@ class UserDAO(BaseDAO):
 
 class DepartmentDAO(BaseDAO):
     model = Departments
+
+    @classmethod
+    async def get_department_total_budget(cls, session: Session, department_id):
+        result = session.query(
+            func.sum(Transactions.value)
+        ).join(
+            Budgets
+        ).filter(
+            and_(
+                Budgets.department_id == department_id
+            )
+        ).first()
+        return result
+
+
+    @classmethod
+    async def get_department_monthly_budget(cls, session: Session, department_id):
+        result = session.execute(
+            text("""
+                    SELECT 
+                        EXTRACT(YEAR FROM month_series) AS year,
+                        EXTRACT(MONTH FROM month_series) AS month,
+                        SUM(value) AS sum
+                    FROM (
+                        SELECT 
+                            generate_series(start_date, finish_date, INTERVAL '1 month') AS month_series,
+                            value
+                        FROM budgets
+                        WHERE department_id = :department_id
+                    ) AS budget_months
+                    GROUP BY year, month
+                    ORDER BY year, month;
+                """),
+            {"department_id": department_id}
+        ).fetchall()
+
+        return result
 
 
 class ClientDAO(BaseDAO):
@@ -80,3 +124,19 @@ class FileDAO(BaseDAO):
 
 class LogDAO(BaseDAO):
     model = Logs
+
+
+class BudgetDAO(BaseDAO):
+    model = Budgets
+
+    @classmethod
+    async def get_budget_sum(cls, session: Session, budget_id):
+        result = session.query(
+            func.sum(Transactions.value)
+        ).filter(
+            and_(
+                Transactions.budget_id == budget_id
+            )
+        ).first()
+        return result
+

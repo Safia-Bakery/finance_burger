@@ -92,5 +92,9 @@ permission_groups = {
     },
     "Settings": {
         "restart": "restart_bot"
+    },
+    "Budgets": {
+        "create": "создать бюджет",
+        "read": "показать бюджет"
     }
 }

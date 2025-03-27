@@ -16,6 +16,7 @@ class Departments(Base):
     client_id = Column(UUID, ForeignKey("clients.id", ondelete="SET NULL"), unique=True, nullable=True)
     head = relationship('Clients', back_populates='department') # lazy="selectin"
     requests = relationship('Requests', back_populates='department', passive_deletes=True) # lazy='select'
+    budgets = relationship('Budgets', back_populates='department')
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

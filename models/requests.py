@@ -42,6 +42,7 @@ class Requests(Base):
     # supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True)
     # supplier = relationship('Suppliers', back_populates='requests') # lazy="selectin"
     logs = relationship('Logs', back_populates='request', cascade="all, delete") # lazy="selectin"
+    transaction = relationship('Transactions', back_populates='request')
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Optional, List
 from uuid import UUID
 
@@ -38,6 +39,11 @@ async def get_department_list(
         filters["name"] = name
 
     departments = await DepartmentDAO.get_by_attributes(session=db, filters=filters if filters else None)
+    for department in departments:
+        budget = (await DepartmentDAO.get_department_total_budget(session=db, department_id=department.id))[0]
+        # print(budget)
+        department.total_budget = budget
+
     return paginate(departments)
 
 
@@ -48,6 +54,22 @@ async def get_department(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read"]}))
 ):
     department = await DepartmentDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
+    budget = await DepartmentDAO.get_department_monthly_budget(session=db, department_id=id)
+    # print("budget: ", budget)
+    department.monthly_budget = budget
+
+    # Group data by year
+    result_dict = defaultdict(dict)
+
+    for year, month, value in department.monthly_budget:
+        result_dict[int(year)][int(month)] = float(value)
+
+    # Convert defaultdict to a list of dictionaries
+    department.monthly_budget = [{year: months} for year, months in result_dict.items()]
+
+    # Print result
+    # print(department.monthly_budget)
+
     return department
 
 

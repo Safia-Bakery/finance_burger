@@ -15,3 +15,5 @@ from .contracts import Contracts
 from .invoices import Invoices
 from .files import Files
 from .logs import Logs
+from .budgets import Budgets
+from .transactions import Transactions
