@@ -54,9 +54,9 @@ async def get_department(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read"]}))
 ):
     department = await DepartmentDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
-    budget = await DepartmentDAO.get_department_monthly_budget(session=db, department_id=id)
+    # budget = await DepartmentDAO.get_department_monthly_budget(session=db, department_id=id)
     # print("budget: ", budget)
-    department.monthly_budget = budget
+    # department.monthly_budget = budget
 
     # Group data by year
     result_dict = defaultdict(dict)
