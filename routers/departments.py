@@ -4,7 +4,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from core.session import get_db
@@ -58,14 +57,14 @@ async def get_department(
     # print("budget: ", budget)
     # department.monthly_budget = budget
 
-    # Group data by year
-    result_dict = defaultdict(dict)
-
-    for year, month, value in department.monthly_budget:
-        result_dict[int(year)][int(month)] = float(value)
-
-    # Convert defaultdict to a list of dictionaries
-    department.monthly_budget = [{year: months} for year, months in result_dict.items()]
+    # # Group data by year
+    # result_dict = defaultdict(dict)
+    #
+    # for year, month, value in department.monthly_budget:
+    #     result_dict[int(year)][int(month)] = float(value)
+    #
+    # # Convert defaultdict to a list of dictionaries
+    # department.monthly_budget = [{year: months} for year, months in result_dict.items()]
 
     # Print result
     # print(department.monthly_budget)

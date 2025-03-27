@@ -24,7 +24,7 @@ class Department(Departments):
 
 class CreateDepartment(TunedModel):
     name: str
-    user_id: Optional[UUID] = None
+    client_id: Optional[UUID] = None
 
     # def __init__(self, /, **kwargs):
     #     # Assign all attributes normally
