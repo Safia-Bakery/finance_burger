@@ -31,7 +31,7 @@ async def create_department(
 async def get_department_list(
         name: Optional[str] = None,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read"]}))
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read", "accounting"]}))
 ):
     filters = {}
     if name is not None:

@@ -35,7 +35,7 @@ async def get_client_list(
         tg_id: Optional[int] = None,
         is_active: Optional[bool] = None,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read"]}))
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Clients": ["read", "accounting"]}))
 ):
     filters = {}
     if fullname is not None:
