@@ -21,6 +21,7 @@ from routers.logs import logs_router
 from routers.statistics import statistics_router
 from routers.accounting import accounting_router
 from routers.settings import settings_router
+from routers.budgets import budgets_router
 
 
 # app = FastAPI(
@@ -41,6 +42,7 @@ main_router.include_router(roles_router, tags=['Roles'])
 main_router.include_router(users_router, tags=['Users'])
 main_router.include_router(clients_router, tags=['Clients'])
 main_router.include_router(departments_router, tags=['Departments'])
+main_router.include_router(budgets_router, tags=['Budgets'])
 main_router.include_router(expense_types_router, tags=['Expense Types'])
 main_router.include_router(payment_types_router, tags=['Payment Types'])
 main_router.include_router(buyers_router, tags=['Buyers'])

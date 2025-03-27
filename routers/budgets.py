@@ -3,16 +3,12 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import ContractDAO, BudgetDAO
+from dal.dao import BudgetDAO
 from schemas.budgets import Budgets, CreateBudget, Budget
-from schemas.contracts import Contract, CreateContract
 from utils.utils import PermissionChecker
-
-
 
 budgets_router = APIRouter()
 
