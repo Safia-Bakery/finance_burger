@@ -27,12 +27,14 @@ permission_groups = {
         "read": "read_client",
         "update": "update_client",
         "delete": "delete_client",
+        "accounting": "показать клиента для бухгалтерии"
     },
     "Departments": {
         "create": "create_department",
         "read": "read_department",
         "update": "update_department",
         "delete": "delete_department",
+        "accounting": "показать отдел для бухгалтерии"
     },
     "Buyers": {
         "create": "create_buyer",
@@ -51,12 +53,14 @@ permission_groups = {
         "read": "read_expense-type",
         "update": "update_expense-type",
         "delete": "delete_expense-type",
+        "accounting": "показать тип расходов для бухгалтерии"
     },
     "PaymentTypes": {
         "create": "create_payment-type",
         "read": "read_payment-type",
         "update": "update_payment-type",
         "delete": "delete_payment-type",
+        "accounting": "показать тип оплаты для бухгалтерии"
     },
     "Requests": {
         "create": "create_request",
