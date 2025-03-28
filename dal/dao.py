@@ -145,12 +145,15 @@ class TransactionDAO(BaseDAO):
     model = Transactions
 
     @classmethod
-    async def get_department_transactions(cls, session: Session, department_id):
+    async def get_department_transactions(cls, session: Session, department_id, start_date, finish_date):
         result = session.query(
             Transactions
         ).join(
             Budgets
         ).filter(
-            Budgets.department_id == department_id
+            and_(
+                Budgets.department_id == department_id,
+                Transactions.created_at.between(start_date, finish_date)
+            )
         ).all()
         return result

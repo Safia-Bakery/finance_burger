@@ -42,10 +42,17 @@ async def create_transaction(
 @transactions_router.get("/transactions", response_model=Page[Transactions])
 async def get_transaction_list(
         department_id: Optional[UUID],
+        start_date: Optional[date] = None,
+        finish_date: Optional[date] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Transactions": ["read"]}))
 ):
 
-    objs = await TransactionDAO.get_department_transactions(session=db, department_id=department_id)
+    objs = await TransactionDAO.get_department_transactions(
+        session=db,
+        department_id=department_id,
+        start_date=start_date,
+        finish_date=finish_date
+    )
     return paginate(objs)
 
