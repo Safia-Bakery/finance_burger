@@ -1,5 +1,6 @@
 from typing import Dict, Any
 
+from dns.reversename import to_address
 from sqlalchemy import func, and_, text
 from sqlalchemy.orm import Session
 
@@ -145,15 +146,45 @@ class TransactionDAO(BaseDAO):
     model = Transactions
 
     @classmethod
-    async def get_department_transactions(cls, session: Session, department_id, start_date, finish_date):
+    async def get_department_transactions(cls, session: Session, department_id, start_date, finish_date, page, size):
         result = session.query(
             Transactions
         ).join(
             Budgets
         ).filter(
-            and_(
-                Budgets.department_id == department_id,
-                Transactions.created_at.between(start_date, finish_date)
+            Budgets.department_id == department_id
+        )
+        if start_date is not None and finish_date is not None:
+            result = result.filter(
+                func.date(Transactions.created_at).between(start_date, finish_date)
             )
-        ).all()
+
+        result = result.order_by(
+            Transactions.created_at.desc()
+        ).offset((page - 1) * size).limit(size).all()
         return result
+
+    @classmethod
+    async def get_department_all_transactions(cls, session: Session, department_id, start_date, finish_date):
+        total_transactions = session.query(
+            Transactions
+        ).join(
+            Budgets
+        ).filter(
+            Budgets.department_id == department_id
+        )
+        if start_date is not None and finish_date is not None:
+            total_transactions = total_transactions.filter(
+                func.date(Transactions.created_at).between(start_date, finish_date)
+            )
+        total_transactions = total_transactions.count()
+        return total_transactions
+
+    @classmethod
+    async def get_budget_transactions(cls, session: Session, budget_id):
+        transactions = session.query(
+            Transactions
+        ).filter(
+            Transactions.budget_id == budget_id
+        ).all()
+        return transactions

@@ -38,6 +38,7 @@ class Requests(TunedModel):
 
 
 class Request(Requests):
+    exchange_rate: Optional[float] = None
     comment: Optional[str] = None
     to_accounting: Optional[bool] = None
     approve_comment: Optional[str] = None
@@ -83,3 +84,12 @@ class UpdateRequest(TunedModel):
     payer_company: Optional[str] = None
     invoice: Optional[bool] = None
     file_paths: List[str] = None
+
+
+
+class RequestTransactions(TunedModel):
+    number: int
+    expense_type: Optional[ExpenseTypes] = None
+    sum: float = None
+    currency: Optional[str] = None
+    exchange_rate: Optional[float] = None
