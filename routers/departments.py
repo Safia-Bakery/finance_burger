@@ -7,7 +7,7 @@ from fastapi_pagination import Page, paginate
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import DepartmentDAO
+from dal.dao import DepartmentDAO, UserDAO
 from schemas.departments import Department, CreateDepartment, Departments, UpdateDepartment
 from utils.utils import PermissionChecker
 
@@ -38,6 +38,10 @@ async def get_department_list(
         filters["name"] = name
 
     departments = await DepartmentDAO.get_by_attributes(session=db, filters=filters if filters else None)
+    user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["user"]["id"]}, first=True)
+    role_department_relations = user.role.departments
+    role_departments = [relation.department_id for relation in role_department_relations]
+    departments = [department for department in departments if department.id in role_departments]
     for department in departments:
         budget = (await DepartmentDAO.get_department_total_budget(session=db, department_id=department.id))[0]
         # print(budget)

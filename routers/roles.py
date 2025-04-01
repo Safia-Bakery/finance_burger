@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import RoleDAO, AccessDAO
+from dal.dao import RoleDAO, AccessDAO, RoleDepartmentDAO
 from schemas.roles import GetRole, CreateRole, GetRoles, UpdateRole
 from utils.utils import PermissionChecker
 
@@ -22,6 +22,7 @@ async def create_role(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["create"]}))
 ):
     permissions = body.permissions
+    departments = body.departments
     body_dict = body.model_dump()
     body_dict.pop("permissions", None)
     created_role = await RoleDAO.add(session=db, **body_dict)
@@ -34,6 +35,14 @@ async def create_role(
         db.refresh(created_role)
         role_accesses = created_role.accesses
         created_role.permissions = [access.permission for access in role_accesses]
+
+    if departments is not None:
+        for department in departments:
+            data = {"department_id": department, "role_id": created_role.id}
+            await RoleDepartmentDAO.add(session=db, **data)
+
+        db.commit()
+        db.refresh(created_role)
 
     return created_role
 
@@ -67,6 +76,7 @@ async def update_role(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Roles": ["update"]}))
 ):
     permissions = body.permissions
+    departments = body.departments
     body_dict = body.model_dump(exclude_unset=True)
     body_dict.pop("permissions", None)
     updated_role = await RoleDAO.update(session=db, data=body_dict)
@@ -87,6 +97,22 @@ async def update_role(
         db.refresh(updated_role)
         role_accesses = updated_role.accesses
         updated_role.permissions = [access.permission for access in role_accesses]
+
+    if departments is not None:
+        role_department_relations = updated_role.departments
+        role_departments = [relation.department_id for relation in role_department_relations]
+
+        for department in role_departments:
+            if department not in departments:
+                await RoleDepartmentDAO.delete(session=db, filters={"department_id": department, "role_id": updated_role.id})
+
+        for department in departments:
+            if department not in role_departments:
+                data = {"department_id": department, "role_id": updated_role.id}
+                await RoleDepartmentDAO.add(session=db, **data)
+
+        db.commit()
+        db.refresh(updated_role)
 
     return updated_role
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from dal.base import BaseDAO
 from models.roles import Roles
+from models.role_department_relations import RoleDepartments
 from models.permission_groups import PermissionGroups
 from models.permissions import Permissions
 from models.users import Users
@@ -36,6 +37,10 @@ class PermissionDAO(BaseDAO):
 
 class RoleDAO(BaseDAO):
     model = Roles
+
+
+class RoleDepartmentDAO(BaseDAO):
+    model = RoleDepartments
 
 
 class AccessDAO(BaseDAO):

@@ -17,3 +17,4 @@ from .files import Files
 from .logs import Logs
 from .budgets import Budgets
 from .transactions import Transactions
+from .role_department_relations import RoleDepartments
