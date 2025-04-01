@@ -41,7 +41,7 @@ async def get_department_list(
     user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["user"]["id"]}, first=True)
     role_department_relations = user.role.departments
     role_departments = [relation.department_id for relation in role_department_relations]
-    departments = [department for department in departments if department.id in role_departments]
+    departments = [department for department in departments if department.id in role_departments] if role_departments else [department for department in departments]
     for department in departments:
         budget = (await DepartmentDAO.get_department_total_budget(session=db, department_id=department.id))[0]
         # print(budget)
