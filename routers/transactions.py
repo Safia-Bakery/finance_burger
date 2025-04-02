@@ -98,3 +98,32 @@ async def get_budget_transaction_list(
     for transaction in transactions:
         transaction.currency = "Сум"
     return transactions
+
+
+
+@transactions_router.get("/calendar-transactions")
+async def get_calendar_transaction_list(
+        start_date: Optional[date] = None,
+        finish_date: Optional[date] = None,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Transactions": ["read"]}))
+):
+    result = await TransactionDAO.get_calendar_transactions(
+        session=db,
+        start_date=start_date,
+        finish_date=finish_date
+    )
+    print(result)
+
+    # Process results into the required structure
+    grouped_data = {}
+    for date, payment_type, total_value in result:
+        date_str = str(date)  # Convert date to string
+        if date_str not in grouped_data:
+            grouped_data[date_str] = {}
+        grouped_data[date_str][payment_type] = int(total_value)  # Convert Decimal to int
+
+    # Convert to the expected list format
+    return [{date: transactions} for date, transactions in grouped_data.items()]
+
+

@@ -50,13 +50,25 @@ async def get_budget_list(
 
 
 
-@budgets_router.get("/budgets/{id}", response_model=Budget)
-async def get_budget(
-        id: UUID,
+@budgets_router.get("/budget-balance", response_model=Budget)
+async def get_budget_balance(
+        department_id: UUID,
+        expense_type_id: UUID,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Budgets": ["read"]}))
 ):
-    obj = await BudgetDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
+    filters = {
+        "department_id": department_id,
+        "expense_type_id": expense_type_id
+    }
+    obj = await BudgetDAO.get_by_attributes(session=db, filters=filters, first=True)
+    budget = (await BudgetDAO.get_filtered_budget_sum(session=db, department_id=department_id, expense_type_id=expense_type_id))[0]
+    print("budget: ", budget)
+    expense = (await BudgetDAO.get_filtered_budget_expense(session=db, department_id=department_id, expense_type_id=expense_type_id))[0]
+    print("expense: ", expense)
+    expense = -expense if expense is not None else 0
+    obj.value = budget - expense
+
     return obj
 
 

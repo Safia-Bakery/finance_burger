@@ -199,6 +199,34 @@ class BudgetDAO(BaseDAO):
         ).first()
         return result
 
+    @classmethod
+    async def get_filtered_budget_sum(cls, session: Session, department_id, expense_type_id):
+        result = session.query(
+            func.sum(Transactions.value)
+        ).join(
+            Budgets
+        ).filter(
+            and_(
+                Budgets.department_id == department_id,
+                Budgets.expense_type_id == expense_type_id
+            )
+        ).first()
+        return result
+
+    @classmethod
+    async def get_filtered_budget_expense(cls, session: Session, department_id, expense_type_id):
+        result = session.query(
+            func.sum(Transactions.value)
+        ).join(
+            Requests
+        ).filter(
+            and_(
+                Requests.department_id == department_id,
+                Requests.expense_type_id == expense_type_id
+            )
+        ).first()
+        return result
+
 
 class TransactionDAO(BaseDAO):
     model = Transactions
@@ -246,3 +274,24 @@ class TransactionDAO(BaseDAO):
             Transactions.budget_id == budget_id
         ).all()
         return transactions
+
+    @classmethod
+    async def get_calendar_transactions(cls, session: Session, start_date, finish_date):
+        result = session.query(
+            func.date(Requests.payment_time),
+            PaymentTypes.name,
+            func.sum(-Transactions.value)
+        ).join(
+            Requests, Transactions.request_id == Requests.id
+        ).join(
+            PaymentTypes, Requests.payment_type_id == PaymentTypes.id
+        ).filter(
+            and_(
+                func.date(Requests.payment_time).between(start_date, finish_date),
+                Transactions.status == 1
+            )
+        ).group_by(
+            func.date(Requests.payment_time),
+            PaymentTypes.name
+        ).all()
+        return result

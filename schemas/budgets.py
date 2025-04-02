@@ -17,7 +17,6 @@ class Budgets(TunedModel):
 
 
 class Budget(Budgets):
-    # transactions: Optional[Transactions] = None
     updated_at: Optional[datetime] = None
 
 
