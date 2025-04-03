@@ -319,7 +319,8 @@ class TransactionDAO(BaseDAO):
         result = session.query(
             func.date(Requests.payment_time),
             PaymentTypes.name,
-            func.sum(-Transactions.value)
+            # func.sum(-Transactions.value)
+            func.sum(Requests.sum)
         ).join(
             Requests, Transactions.request_id == Requests.id
         ).join(
