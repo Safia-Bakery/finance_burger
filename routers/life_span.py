@@ -141,11 +141,12 @@ async def request_status_update():
             updated_request = await RequestDAO.update(session=session, data={"id": request.id, "status": 2})
             transaction = await TransactionDAO.get_by_attributes(session=session, filters={"request_id": updated_request.id},
                                                                  first=True)
-            data = {
-                "id": transaction.id,
-                "status": updated_request.status
-            }
-            await TransactionDAO.update(session=session, data=data)
+            if transaction:
+                data = {
+                    "id": transaction.id,
+                    "status": updated_request.status
+                }
+                await TransactionDAO.update(session=session, data=data)
 
             try:
                 send_telegram_message(
@@ -167,11 +168,12 @@ async def request_status_update():
             transaction = await TransactionDAO.get_by_attributes(session=session,
                                                                  filters={"request_id": updated_request.id},
                                                                  first=True)
-            data = {
-                "id": transaction.id,
-                "status": updated_request.status
-            }
-            await TransactionDAO.update(session=session, data=data)
+            if transaction:
+                data = {
+                    "id": transaction.id,
+                    "status": updated_request.status
+                }
+                await TransactionDAO.update(session=session, data=data)
 
         session.commit()
 

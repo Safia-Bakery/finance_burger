@@ -190,11 +190,12 @@ async def update_request(
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
     transaction = await TransactionDAO.get_by_attributes(session=db, filters={"request_id": updated_request.id}, first=True)
-    data = {
-        "id": transaction.id,
-        "status": updated_request.status
-    }
-    await TransactionDAO.update(session=db, data=data)
+    if transaction:
+        data = {
+            "id": transaction.id,
+            "status": updated_request.status
+        }
+        await TransactionDAO.update(session=db, data=data)
 
     db.commit()
     db.refresh(updated_request)
