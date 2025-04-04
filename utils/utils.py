@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from typing import Optional
-
+import pandas as pd
 import string
 import random
 import requests
@@ -221,3 +221,47 @@ def error_sender(error_message):
     else:
         print("Response text: ", response.text)
         return None
+
+
+status_data = {0: "Новый", 1: "Принят", 2: "Ожидает оплаты", 3: "Просрочен", 4: "Отклонен", 5: "Обработан"}
+approved_data = {True: "Да", False: "Нет"}
+
+def excel_generator(data):
+    columns = {
+        "Код заявки SAP": [],
+        "Дата запроса": [],
+        "Отдел": [],
+        "Одобрено": [],
+        "Комментария": [],
+        "Тип расхода": [],
+        "Заказчик": [],
+        "Закупщик": [],
+        "Поставщик": [],
+        "Сумма": [],
+        "Валюта": [],
+        "Тип оплаты": [],
+        "Дата оплаты": [],
+        "Статус": []
+    }
+    for row in data:
+        columns["Код заявки SAP"].append(row.sap_code)
+        columns["Дата запроса"].append(row.created_at.strftime("%d-%m-%Y"))
+        columns["Отдел"].append(row.department.name)
+        columns["Одобрено"].append(approved_data[row.approved])
+        columns["Комментария"].append(row.description)
+        columns["Тип расхода"].append(row.expense_type.name)
+        columns["Заказчик"].append(row.client.fullname)
+        columns["Закупщик"].append(row.buyer)
+        columns["Поставщик"].append(row.supplier)
+        columns["Сумма"].append(row.sum)
+        columns["Валюта"].append(row.currency)
+        columns["Тип оплаты"].append(row.payment_type.name)
+        columns["Дата оплаты"].append(row.payment_time.strftime("%d-%m-%Y")) if row.payment_time else columns["Дата оплаты"].append(" ")
+        columns['Статус'].append(status_data[row.status])
+
+    file_name = "files/requests_report.xlsx"
+    df = pd.DataFrame(columns)
+    # Generate Excel file
+    df.to_excel(file_name, index=False)
+    return file_name
+

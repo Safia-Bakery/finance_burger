@@ -95,3 +95,10 @@ class RequestTransactions(TunedModel):
     sum: float = None
     currency: Optional[str] = None
     exchange_rate: Optional[float] = None
+
+
+
+class GenerateExcel(TunedModel):
+    start_date: date
+    finish_date: date
+

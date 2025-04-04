@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.session import session_maker, create_sequence, get_db
-from dal.dao import PermissionGroupDAO, PermissionDAO, RoleDAO, AccessDAO, UserDAO, RequestDAO
+from dal.dao import PermissionGroupDAO, PermissionDAO, RoleDAO, AccessDAO, UserDAO, RequestDAO, TransactionDAO
 from utils.permissions import permission_groups
 from utils.utils import Hasher, send_telegram_message
 
@@ -138,7 +138,15 @@ async def request_status_update():
         today_requests = session.execute(today_query).scalars().all()
         for request in today_requests:
             # time.sleep(1)
-            await RequestDAO.update(session=session, data={"id": request.id, "status": 2})
+            updated_request = await RequestDAO.update(session=session, data={"id": request.id, "status": 2})
+            transaction = await TransactionDAO.get_by_attributes(session=session, filters={"request_id": updated_request.id},
+                                                                 first=True)
+            data = {
+                "id": transaction.id,
+                "status": updated_request.status
+            }
+            await TransactionDAO.update(session=session, data=data)
+
             try:
                 send_telegram_message(
                     chat_id=request.client.tg_id,
@@ -155,7 +163,15 @@ async def request_status_update():
         ).all()
         for request in expired_requests:
             # time.sleep(1)
-            await RequestDAO.update(session=session, data={"id": request.id, "status": 3})
+            updated_request = await RequestDAO.update(session=session, data={"id": request.id, "status": 3})
+            transaction = await TransactionDAO.get_by_attributes(session=session,
+                                                                 filters={"request_id": updated_request.id},
+                                                                 first=True)
+            data = {
+                "id": transaction.id,
+                "status": updated_request.status
+            }
+            await TransactionDAO.update(session=session, data=data)
 
         session.commit()
 

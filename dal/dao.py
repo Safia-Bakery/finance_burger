@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Dict, Any
 
 from dns.reversename import to_address
@@ -206,6 +207,24 @@ class SupplierDAO(BaseDAO):
 class RequestDAO(BaseDAO):
     model = Requests
 
+    @classmethod
+    async def get_excel(cls, session: Session, start_date, finish_date):
+        finish_date = finish_date + timedelta(days=1)
+        query = session.query(
+            cls.model
+        ).join(
+            Departments, cls.model.department_id == Departments.id
+        ).join(
+            ExpenseTypes, cls.model.expense_type_id == ExpenseTypes.id
+        ).join(
+            Clients, cls.model.client_id == Clients.id
+        ).join(
+            PaymentTypes, cls.model.payment_type_id == PaymentTypes.id
+        ).filter(
+            func.date(cls.model.created_at).between(start_date, finish_date)
+        )
+        return query.order_by(cls.model.number.desc()).all()
+
 
 class ContractDAO(BaseDAO):
     model = Contracts
@@ -232,7 +251,8 @@ class BudgetDAO(BaseDAO):
             func.sum(Transactions.value)
         ).filter(
             and_(
-                Transactions.budget_id == budget_id
+                Transactions.budget_id == budget_id,
+                Transactions.status == 5
             )
         ).first()
         return result
@@ -261,7 +281,8 @@ class BudgetDAO(BaseDAO):
         ).filter(
             and_(
                 Requests.department_id == department_id,
-                Requests.expense_type_id == expense_type_id
+                Requests.expense_type_id == expense_type_id,
+                Transactions.status != 4
             )
         ).first()
         return result
@@ -327,7 +348,7 @@ class TransactionDAO(BaseDAO):
         # ).filter(
         #     and_(
         #         func.date(Requests.payment_time).between(start_date, finish_date),
-        #         Transactions.status.in_([1, 2, 3])
+        #         Transactions.status.in_([1, 2, 3, 5])
         #     )
         # ).group_by(
         #     func.date(Requests.payment_time),
@@ -343,7 +364,7 @@ class TransactionDAO(BaseDAO):
         ).filter(
             and_(
                 func.date(Requests.payment_time).between(start_date, finish_date),
-                Requests.status.in_([1, 2, 3])
+                Requests.status.in_([1, 2, 3, 5])
             )
         ).group_by(
             func.date(Requests.payment_time),

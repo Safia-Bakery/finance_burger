@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 from core.config import settings
 from core.session import get_db
 from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO
-from schemas.requests import Requests, Request, UpdateRequest, CreateRequest
-from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender
+from schemas.requests import Requests, Request, UpdateRequest, CreateRequest, GenerateExcel
+from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender, excel_generator
 
 requests_router = APIRouter()
 
@@ -189,6 +189,13 @@ async def update_request(
 
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
+    transaction = await TransactionDAO.get_by_attributes(session=db, filters={"request_id": updated_request.id}, first=True)
+    data = {
+        "id": transaction.id,
+        "status": updated_request.status
+    }
+    await TransactionDAO.update(session=db, data=data)
+
     db.commit()
     db.refresh(updated_request)
 
@@ -296,3 +303,16 @@ async def update_request(
             print("Sending Error: ", e)
 
     return updated_request
+
+
+
+@requests_router.post("/requests/excel")
+async def get_excel_file(
+        body : GenerateExcel,
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Requests": ["read"]}))
+):
+    query = await RequestDAO.get_excel(session=db, start_date=body.start_date, finish_date=body.finish_date)
+    file_name = excel_generator(data=query)
+    return {'file_name': file_name}
+
