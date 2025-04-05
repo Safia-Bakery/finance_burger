@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import coalesce
 
 from core.session import get_db
-from dal.dao import RequestDAO
+from dal.dao import RequestDAO, UserDAO
 from schemas.requests import Requests
 from utils.utils import PermissionChecker
 
@@ -72,6 +72,12 @@ async def get_accounting(
     #     "status": [1, 2, 3, 5],
     #     "to_accounting": True
     # }
+
+    user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
+    role_department_relations = user.role.roles_departments
+    role_departments = [relation.department_id for relation in role_department_relations]
+    if filters.get("department_id", None) is None:
+        filters["department_id"] = role_departments
 
     query = await RequestDAO.get_all(
         session=db,
