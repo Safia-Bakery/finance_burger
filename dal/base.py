@@ -98,6 +98,8 @@ class BaseDAO:
                         else:
                             if isinstance(v, str):
                                 conditions.append(column.ilike(f"%{v}%"))
+                            elif isinstance(v, list):
+                                conditions.append(column.in_(v))
                             else:
                                 conditions.append(column == v)
 

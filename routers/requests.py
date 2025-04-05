@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.session import get_db
-from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO
+from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO, UserDAO
 from schemas.requests import Requests, Request, UpdateRequest, CreateRequest, GenerateExcel
 from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender, excel_generator
 
@@ -125,10 +125,15 @@ async def get_request_list(
     # }
     # filtered_data = {k: v for k, v in data.items() if v is not None}
 
+    user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
+    role_department_relations = user.role.roles_departments
+    role_departments = [relation.department_id for relation in role_department_relations]
     query = await RequestDAO.get_all(
         session=db,
         filters=filters if filters else None
     )
+    if filters.get("department_id", None) is None:
+        filters["department_id"] = role_departments
     if start_date is not None and finish_date is not None:
         query = query.filter(func.date(RequestDAO.model.created_at).between(start_date, finish_date))
     result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
