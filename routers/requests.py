@@ -128,14 +128,17 @@ async def get_request_list(
     user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
     role_department_relations = user.role.roles_departments
     role_departments = [relation.department_id for relation in role_department_relations]
+    if filters.get("department_id", None) is None:
+        filters["department_id"] = role_departments
+
     query = await RequestDAO.get_all(
         session=db,
         filters=filters if filters else None
     )
-    if filters.get("department_id", None) is None:
-        filters["department_id"] = role_departments
+
     if start_date is not None and finish_date is not None:
         query = query.filter(func.date(RequestDAO.model.created_at).between(start_date, finish_date))
+
     result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
 
