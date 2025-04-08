@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date
 from typing import Dict, Any
 
 from dns.reversename import to_address
@@ -258,31 +258,39 @@ class BudgetDAO(BaseDAO):
         return result
 
     @classmethod
-    async def get_filtered_budget_sum(cls, session: Session, department_id, expense_type_id):
+    async def get_filtered_budget_sum(cls, session: Session, department_id, expense_type_id, current_date: date):
         result = session.query(
             func.sum(Transactions.value)
         ).join(
-            Budgets
+            Budgets, Transactions.budget_id == Budgets.id
         ).filter(
             and_(
                 Budgets.department_id == department_id,
                 Budgets.expense_type_id == expense_type_id,
-                Transactions.status == 5
+                Transactions.status == 5,
+                current_date >= Budgets.start_date,
+                current_date <= Budgets.finish_date
             )
         ).first()
         return result
 
+
     @classmethod
-    async def get_filtered_budget_expense(cls, session: Session, department_id, expense_type_id):
+    async def get_filtered_budget_expense(cls, session: Session, department_id, expense_type_id, current_date: date):
+        current_year = float(current_date.year)
+        current_month = float(current_date.month)
+
         result = session.query(
             func.sum(Transactions.value)
         ).join(
-            Requests
+            Requests, Transactions.request_id == Requests.id
         ).filter(
             and_(
                 Requests.department_id == department_id,
                 Requests.expense_type_id == expense_type_id,
-                Transactions.status != 4
+                Transactions.status != 4,
+                func.date_part('year', Transactions.created_at) == current_year,
+                func.date_part('month', Transactions.created_at) == current_month
             )
         ).first()
         return result

@@ -21,7 +21,7 @@ class BaseDAO:
         session.add(new_instance)
         try:
             session.flush()
-            # session.refresh(new_instance)
+            session.refresh(new_instance)
             return new_instance
         except SQLAlchemyError as e:
             session.rollback()

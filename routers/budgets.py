@@ -61,11 +61,22 @@ async def get_budget_balance(
         "department_id": department_id,
         "expense_type_id": expense_type_id
     }
+    current_date = date.today()
     obj = await BudgetDAO.get_by_attributes(session=db, filters=filters, first=True)
-    budget = (await BudgetDAO.get_filtered_budget_sum(session=db, department_id=department_id, expense_type_id=expense_type_id))[0]
+    budget = (await BudgetDAO.get_filtered_budget_sum(
+        session=db,
+        department_id=department_id,
+        expense_type_id=expense_type_id,
+        current_date=current_date
+    ))[0]
     budget = budget if budget is not None else 0
     # print("budget: ", budget)
-    expense = (await BudgetDAO.get_filtered_budget_expense(session=db, department_id=department_id, expense_type_id=expense_type_id))[0]
+    expense = (await BudgetDAO.get_filtered_budget_expense(
+        session=db,
+        department_id=department_id,
+        expense_type_id=expense_type_id,
+        current_date=current_date
+    ))[0]
     # print("expense: ", expense)
     expense = -expense if expense is not None else 0
     obj.value = budget - expense

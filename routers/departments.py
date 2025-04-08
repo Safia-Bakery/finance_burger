@@ -8,7 +8,7 @@ from fastapi_pagination import Page, paginate
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import DepartmentDAO, UserDAO, TransactionDAO
+from dal.dao import DepartmentDAO, UserDAO, TransactionDAO, RoleDepartmentDAO
 from schemas.departments import Department, CreateDepartment, Departments, UpdateDepartment
 from utils.utils import PermissionChecker
 
@@ -23,8 +23,16 @@ async def create_department(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["create"]}))
 ):
     created_department = await DepartmentDAO.add(session=db, **body.model_dump())
+    user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
+    created_role_department = await RoleDepartmentDAO.add(
+        session=db,
+        **{
+            "role_id": user.role_id,
+            "department_id": created_department.id
+        }
+    )
     db.commit()
-    db.refresh(created_department)
+    # db.refresh(created_department)
     return created_department
 
 
@@ -42,9 +50,10 @@ async def get_department_list(
 
     departments = await DepartmentDAO.get_by_attributes(session=db, filters=filters if filters else None)
     user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
-    role_department_relations = user.role.roles_departments
-    role_departments = [relation.department_id for relation in role_department_relations]
-    departments = [department for department in departments if department.id in role_departments] if role_departments else [department for department in departments]
+    if user.role.name != "Администратор":
+        role_department_relations = user.role.roles_departments
+        role_departments = [relation.department_id for relation in role_department_relations]
+        departments = [department for department in departments if department.id in role_departments] if role_departments else [department for department in departments]
     for department in departments:
         budget = (
             await DepartmentDAO.get_department_total_budget(
@@ -66,6 +75,8 @@ async def get_department(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["read"]}))
 ):
     department = await DepartmentDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
+    if department is None:
+        raise HTTPException(status_code=400, detail="Отдел не найден!")
     budget = await DepartmentDAO.get_department_monthly_budget(session=db, department_id=id, start_date=start_date, finish_date=finish_date)
 
     # Group data by year
@@ -109,4 +120,4 @@ async def delete_department(
     if deleted_department is True:
         return {"Message": "Отдел удален успешно !"}
     else:
-        raise HTTPException(status_code=400, detail="Данный отдел не найден !")
+        raise HTTPException(status_code=400, detail="Данный отдел привязан к некоторой роли !")
