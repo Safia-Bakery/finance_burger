@@ -27,6 +27,7 @@ class CreateDepartment(TunedModel):
     name: str
     client_id: Optional[UUID] = None
     over_budget: Optional[bool] = None
+    role_ids: Optional[List[UUID]] = None
 
     # def __init__(self, /, **kwargs):
     #     # Assign all attributes normally

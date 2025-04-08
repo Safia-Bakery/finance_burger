@@ -1,108 +1,108 @@
 permission_groups = {
-    "Permissions": {
-        "create": "create_permission",
-        "read": "read_permission",
-        "update": "update_permission",
-        "delete": "delete_permission",
+    "Разрешения": {
+        "create": "создать права",
+        "read": "показать права",
+        "update": "изменить права",
+        "delete": "удалить права"
     },
-    "Roles": {
-        "create": "create_role",
-        "read": "read_role",
-        "update": "update_role",
-        "delete": "delete_role"
+    "Роли": {
+        "create": "создать роль",
+        "read": "показать роль",
+        "update": "изменить роль",
+        "delete": "удалить роль"
     },
-    "Accesses": {
-        "create": "create_access",
-        "read": "read_access",
-        "delete": "delete_access"
+    "Доступы": {
+        "create": "создать доступ",
+        "read": "показать доступ",
+        "delete": "удалить доступ"
     },
-    "Users": {
-        "create": "create_user",
-        "read": "read_user",
-        "update": "update_user",
-        "delete": "delete_user",
+    "Пользователи": {
+        "create": "создать пользователя",
+        "read": "показать пользователя",
+        "update": "изменить пользователя",
+        "delete": "удалить пользователя"
     },
-    "Clients": {
-        "create": "create_client",
-        "read": "read_client",
-        "update": "update_client",
-        "delete": "delete_client",
+    "Клиенты": {
+        "create": "создать клиента",
+        "read": "показать клиента",
+        "update": "изменить клиента",
+        "delete": "удалить клиента",
         "accounting": "показать клиента для бухгалтерии"
     },
-    "Departments": {
-        "create": "create_department",
-        "read": "read_department",
-        "update": "update_department",
-        "delete": "delete_department",
+    "Отделы": {
+        "create": "создать отдел",
+        "read": "показать отдел",
+        "update": "изменить отдел",
+        "delete": "удалить отдел",
         "accounting": "показать отдел для бухгалтерии"
     },
-    "Buyers": {
-        "create": "create_buyer",
-        "read": "read_buyer",
-        "update": "update_buyer",
-        "delete": "delete_buyer",
+    "Закупщики": {
+        "create": "создать закупщика",
+        "read": "показать закупщика",
+        "update": "изменить закупщика",
+        "delete": "удалить закупщика",
     },
-    "Suppliers": {
-        "create": "create_supplier",
-        "read": "read_supplier",
-        "update": "update_supplier",
-        "delete": "delete_supplier",
+    "Поставщики": {
+        "create": "создать поставщика",
+        "read": "показать поставщика",
+        "update": "изменить поставщика",
+        "delete": "удалить поставщика",
     },
-    "ExpenseTypes": {
-        "create": "create_expense-type",
-        "read": "read_expense-type",
-        "update": "update_expense-type",
-        "delete": "delete_expense-type",
+    "Типы расходов": {
+        "create": "создать тип расходов",
+        "read": "показать тип расходов",
+        "update": "изменить тип расходов",
+        "delete": "удалить тип расходов",
         "accounting": "показать тип расходов для бухгалтерии"
     },
-    "PaymentTypes": {
-        "create": "create_payment-type",
-        "read": "read_payment-type",
-        "update": "update_payment-type",
-        "delete": "delete_payment-type",
+    "Типы оплаты": {
+        "create": "создать тип платежа",
+        "read": "показать тип платежа",
+        "update": "изменить тип платежа",
+        "delete": "удалить тип платежа",
         "accounting": "показать тип оплаты для бухгалтерии"
     },
-    "Requests": {
-        "create": "create_request",
-        "read": "read_request",
-        "update": "update_request",
-        "delete": "delete_request",
-        "reject": "reject_request",
-        "approve": "approve_request",
+    "Заявки": {
+        "create": "создать заявку",
+        "read": "показать заявку",
+        "update": "изменить заявку",
+        "delete": "удалить заявку",
+        "reject": "отклонить заявку",
+        "approve": "одобрить заявку",
         "accounting": "показать заявки бухгалтерии",
         "accounting 2": "изменить заявки бухгалтерии",
         "statistics": "показать статистику"
     },
-    "Contracts": {
-        "create": "create_contract",
-        "read": "read_contract",
-        "update": "update_contract",
-        "delete": "delete_contract",
+    "Контракты": {
+        "create": "создать договор",
+        "read": "показать договор",
+        "update": "изменить договор",
+        "delete": "удалить договор"
     },
-    "Invoices": {
-        "create": "create_invoice",
-        "read": "read_invoice",
-        "update": "update_invoice",
-        "delete": "delete_invoice",
+    "Счета-фактуры": {
+        "create": "создать квитанцию",
+        "read": "показать квитанцию",
+        "update": "изменить квитанцию",
+        "delete": "удалить квитанцию",
     },
-    "Files": {
-        "create": "create_file",
-        "read": "read_file",
-        "update": "update_file",
-        "delete": "delete_file",
+    "Файлы": {
+        "create": "создать файл",
+        "read": "показать файл",
+        "update": "изменить файл",
+        "delete": "удалить файл",
     },
-    "Logs": {
-        "create": "create_log",
-        "read": "read_log"
+    "Логи": {
+        "create": "создать лога",
+        "read": "показать лога"
     },
-    "Settings": {
-        "restart": "restart_bot"
+    "Настройки": {
+        "restart": "перезапуск бота"
     },
-    "Budgets": {
+    "Бюджеты": {
         "create": "создать бюджет",
         "read": "показать бюджет"
     },
-    "Transactions": {
+    "Транзакции": {
         "create": "создать транзакцию",
         "read": "показать транзакцию"
     }

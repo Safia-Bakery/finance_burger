@@ -22,15 +22,25 @@ async def create_department(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Departments": ["create"]}))
 ):
-    created_department = await DepartmentDAO.add(session=db, **body.model_dump())
+    body_dict = body.model_dump(exclude_unset=True)
+    body_dict.pop("role_ids", None)
+    created_department = await DepartmentDAO.add(session=db, **body_dict)
     user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
-    created_role_department = await RoleDepartmentDAO.add(
-        session=db,
-        **{
-            "role_id": user.role_id,
-            "department_id": created_department.id
-        }
-    )
+    if body.role_ids is not None:
+        body.role_ids.append(user.role_id)
+    else:
+        body.role_ids = [user.role_id]
+
+
+    role_ids = set(body.role_ids) if body.role_ids else set([])
+    for role_id in role_ids:
+        await RoleDepartmentDAO.add(
+            session=db,
+            **{
+                "role_id": role_id,
+                "department_id": created_department.id
+            }
+        )
     db.commit()
     # db.refresh(created_department)
     return created_department

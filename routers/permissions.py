@@ -7,14 +7,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import PermissionDAO
-from schemas.permissions import GetPermission
+from dal.dao import PermissionDAO, PermissionGroupDAO
+from schemas.permissions import GetPermission, GetPermissionGroup
 from utils.utils import PermissionChecker
 
 
 
 permissions_router = APIRouter()
 
+
+
+@permissions_router.get("/permission-groups", response_model=List[GetPermissionGroup])
+async def get_permission_group_list(
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Permissions": ["read"]}))
+):
+    permission_groups = await PermissionGroupDAO.get_by_attributes(session=db)
+    return permission_groups
 
 
 
