@@ -69,7 +69,7 @@ async def create_request(
 async def get_request_list(
         number: Optional[int] = None,
         client: Optional[str] = None,
-        # client_id: Optional[UUID] = None,
+        client_id: Optional[UUID] = None,
         department_id: Optional[UUID] = None,
         supplier: Optional[str] = None,
         expense_type_id: Optional[UUID] = None,
@@ -88,6 +88,8 @@ async def get_request_list(
     filters = {}
     if number is not None:
         filters["number"] = number
+    if client_id is not None:
+        filters["client_id"] = client_id
     if department_id is not None:
         filters["department_id"] = department_id
     if supplier is not None:
