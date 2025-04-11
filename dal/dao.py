@@ -2,7 +2,7 @@ from datetime import timedelta, date
 from typing import Dict, Any
 
 from dns.reversename import to_address
-from sqlalchemy import func, and_, text
+from sqlalchemy import func, and_, text, or_
 from sqlalchemy.orm import Session
 
 from dal.base import BaseDAO
@@ -304,9 +304,14 @@ class TransactionDAO(BaseDAO):
         result = session.query(
             Transactions
         ).join(
-            Budgets
+            Budgets, Transactions.budget_id == Budgets.id
+        ).join(
+            Requests, Transactions.request_id == Requests.id
         ).filter(
-            Budgets.department_id == department_id
+            or_(
+                Budgets.department_id == department_id,
+                Requests.department_id == department_id
+            )
         )
         if start_date is not None and finish_date is not None:
             result = result.filter(
@@ -323,9 +328,14 @@ class TransactionDAO(BaseDAO):
         total_transactions = session.query(
             Transactions
         ).join(
-            Budgets
+            Budgets, Transactions.budget_id == Budgets.id
+        ).join(
+            Requests, Transactions.request_id == Requests.id
         ).filter(
-            Budgets.department_id == department_id
+            or_(
+                Budgets.department_id == department_id,
+                Requests.department_id == department_id
+            )
         )
         if start_date is not None and finish_date is not None:
             total_transactions = total_transactions.filter(
