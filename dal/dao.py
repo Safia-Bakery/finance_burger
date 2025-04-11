@@ -303,9 +303,9 @@ class TransactionDAO(BaseDAO):
     async def get_department_transactions(cls, session: Session, department_id, start_date, finish_date, page, size):
         result = session.query(
             Transactions
-        ).join(
+        ).outerjoin(
             Budgets, Transactions.budget_id == Budgets.id
-        ).join(
+        ).outerjoin(
             Requests, Transactions.request_id == Requests.id
         ).filter(
             or_(
@@ -327,9 +327,9 @@ class TransactionDAO(BaseDAO):
     async def get_department_all_transactions(cls, session: Session, department_id, start_date, finish_date):
         total_transactions = session.query(
             Transactions
-        ).join(
+        ).outerjoin(
             Budgets, Transactions.budget_id == Budgets.id
-        ).join(
+        ).outerjoin(
             Requests, Transactions.request_id == Requests.id
         ).filter(
             or_(
