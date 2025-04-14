@@ -157,6 +157,11 @@ async def get_request(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting"]}))
 ):
     obj = await RequestDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
+    if obj.exchange_rate is not None:
+        obj.currency_sum = obj.sum / obj.exchange_rate
+    else:
+        obj.currency_sum = obj.sum
+
     return obj
 
 

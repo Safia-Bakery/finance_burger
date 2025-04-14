@@ -5,12 +5,12 @@ from uuid import UUID
 from schemas.base_model import TunedModel
 from schemas.budgets import Budget
 from schemas.departments import Department
-from schemas.requests import Request, RequestTransactions
+from schemas.requests import TransactionRequest
 
 
 class Transactions(TunedModel):
     id: Optional[UUID] = None
-    request: Optional[RequestTransactions] = None
+    request: Optional[TransactionRequest] = None
     budget: Optional[Budget] = None
     status: Optional[int] = None
     value: Optional[float] = None

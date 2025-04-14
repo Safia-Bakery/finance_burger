@@ -25,8 +25,6 @@ class Requests(TunedModel):
     created_at: Optional[datetime] = None
     payment_time: Optional[datetime] = None
     status: Optional[int] = None
-    # buyer: Optional[Buyers] = None
-    # supplier: Optional[Suppliers] = None
     buyer: Optional[str] = None
     supplier: Optional[str] = None
     payment_card: Optional[str] = None
@@ -36,12 +34,12 @@ class Requests(TunedModel):
 
 
 class Request(Requests):
+    currency_sum: Optional[float] = None
     exchange_rate: Optional[float] = None
     comment: Optional[str] = None
     to_accounting: Optional[bool] = None
     approve_comment: Optional[str] = None
     payer_company: Optional[str] = None
-    payment_time: Optional[date] = None
     contract: Optional[Contract] = None
     invoice: Optional[Invoice] = None
     logs: Optional[List[Log]] = None
@@ -87,7 +85,7 @@ class UpdateRequest(TunedModel):
 
 
 
-class RequestTransactions(TunedModel):
+class TransactionRequest(TunedModel):
     id: UUID
     number: int
     expense_type: Optional[ExpenseTypes] = None

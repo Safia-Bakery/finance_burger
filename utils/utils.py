@@ -228,6 +228,7 @@ approved_data = {True: "Да", False: "Нет"}
 
 def excel_generator(data):
     columns = {
+        "Номер заявки": [],
         "Код заявки SAP": [],
         "Дата запроса": [],
         "Отдел": [],
@@ -239,11 +240,14 @@ def excel_generator(data):
         "Поставщик": [],
         "Сумма": [],
         "Валюта": [],
+        "Курс валюты": [],
+        "Запрошенная валюта": [],
         "Тип оплаты": [],
         "Дата оплаты": [],
         "Статус": []
     }
     for row in data:
+        columns["Номер заявки"].append(row.number)
         columns["Код заявки SAP"].append(row.sap_code)
         columns["Дата запроса"].append(row.created_at.strftime("%d-%m-%Y"))
         columns["Отдел"].append(row.department.name)
@@ -255,11 +259,18 @@ def excel_generator(data):
         columns["Поставщик"].append(row.supplier)
         columns["Сумма"].append(row.sum)
         columns["Валюта"].append(row.currency)
+        # print("Request number: ", row.number, "Sum: ", row.sum)
+        if row.exchange_rate is not None:
+            columns["Курс валюты"].append(row.exchange_rate)
+            columns["Запрошенная валюта"].append(row.sum / row.exchange_rate)
+        else:
+            columns["Курс валюты"].append(" ")
+            columns["Запрошенная валюта"].append(row.sum)
         columns["Тип оплаты"].append(row.payment_type.name)
         columns["Дата оплаты"].append(row.payment_time.strftime("%d-%m-%Y")) if row.payment_time else columns["Дата оплаты"].append(" ")
         columns['Статус'].append(status_data[row.status])
 
-    file_name = "files/requests_report.xlsx"
+    file_name = f"files/Finance orders от {datetime.now().strftime('%d.%m.%Y')}.xlsx"
     df = pd.DataFrame(columns)
     # Generate Excel file
     df.to_excel(file_name, index=False)
