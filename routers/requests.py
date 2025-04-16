@@ -282,16 +282,24 @@ async def update_request(
         message_text = ""
         chat_id = updated_request.client.tg_id
         inline_keyboard = None
+
+        request_sum = format(int(request.sum), ',').replace(',', ' ')
+        if request.get('exchange_rate', None) is not None:
+            requested_currency = format((request.sum / request.exchange_rate), ',').replace(',', ' ')
+        else:
+            requested_currency = request_sum
+
         request_text = (
             f"📌 Заявка #{request.number}s\n\n"
             f"📅 Дата заявки: {request.created_at.strftime('%d.%m.%Y')}\n"
             f"📍 Отдел: {request.department.name}\n"
-            f"👤 Заказчик: {request.client.fullname}\n"
-            f"📞 Номер заказчика: {request.client.phone}\n"
-            f"🛒 Закупщик: {request.buyer}\n"
+            f"👤 Заявитель: {request.client.fullname}\n"
+            f"📞 Номер заявителя: {request.client.phone}\n"
+            f"🛒 Заказчик: {request.buyer}\n"
             f"💰 Тип затраты: {request.expense_type.name}\n"
             f"🏢 Поставщик: {request.supplier}\n\n"
-            f"💲 Стоимость: {int(request.sum)}\n"
+            f"💲 Стоимость: {request_sum}\n"
+            f"💲 Запрошенная сумма в валюте: {requested_currency}\n"
             f"💵 Валюта: {request.currency if request.currency else ''}\n"
             f"📈 Курс валюты: {request.exchange_rate if request.exchange_rate else ''}\n"
             f"💳 Тип оплаты: {request.payment_type.name}\n"
