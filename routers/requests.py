@@ -284,7 +284,7 @@ async def update_request(
         inline_keyboard = None
 
         request_sum = format(int(request.sum), ',').replace(',', ' ')
-        if request.get('exchange_rate', None) is not None:
+        if request.exchange_rate is not None:
             requested_currency = format((request.sum / request.exchange_rate), ',').replace(',', ' ')
         else:
             requested_currency = request_sum
