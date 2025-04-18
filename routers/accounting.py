@@ -61,7 +61,7 @@ async def get_accounting(
     if status is not None:
         filters["status"] = status
 
-    filters["payment_type_id"] = UUID("88a747c1-5616-437c-ac71-a02b30287ee8")
+    filters["payment_type_id"] = [UUID("88a747c1-5616-437c-ac71-a02b30287ee8"), UUID('eda54dd2-2eef-430e-ae4e-0c4d68a44298')]
     filters["to_accounting"] = True
     if filters.get("payment_time", None) is None:
         filters["payment_time"] = None
