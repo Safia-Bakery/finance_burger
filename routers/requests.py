@@ -154,7 +154,7 @@ async def get_request_list(
 async def get_request(
         id: UUID,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting"]}))
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting", "transfer"]}))
 ):
     obj = await RequestDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
     if obj.exchange_rate is not None:
@@ -178,7 +178,7 @@ async def update_request(
     body_dict.pop("client_id", None)
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
     request_payment_time = request.payment_time
-    
+
     if body.status == 4:
         if "reject" not in current_user["permissions"]["Заявки"]:
             body_dict.pop("status", None)
