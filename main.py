@@ -1,5 +1,8 @@
 import uvicorn
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
@@ -24,17 +27,29 @@ from routers.settings import settings_router
 from routers.budgets import budgets_router
 from routers.transactions import transactions_router
 from routers.transfers import transfers_router
+from utils.utils import get_current_user_for_docs
 
 
-# app = FastAPI(
-#     swagger_ui_parameters={"docExpansion": "none"},
-#     docs_url=None,
-#     redoc_url=None,
-#     openapi_url=None
-# )
-# app.include_router(user_router)
+app = FastAPI(
+    lifespan=combined_lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
+)
 
-app = FastAPI(title="Finance System ...", lifespan=combined_lifespan)
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui(current_user: str = Depends(get_current_user_for_docs)):
+    return get_swagger_ui_html(
+        openapi_url="/docs/openapi.json",
+        title="Finance System ...",
+        swagger_ui_parameters={"docExpansion": "none"}
+    )
+
+
+@app.get("/docs/openapi.json", include_in_schema=False)
+def get_open_api_endpoint(username: str = Depends(get_current_user_for_docs)):
+    return JSONResponse(get_openapi(title="Secure API", version="1.0.0", routes=app.routes))
+
 
 main_router = APIRouter()
 

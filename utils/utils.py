@@ -6,7 +6,7 @@ import string
 import random
 import requests
 from fastapi import Depends, HTTPException, status, Security
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBasicCredentials, HTTPBasic
 from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,13 +52,18 @@ def create_access_token(data: dict):
 
 
 
+security = HTTPBasic()
 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+def get_current_user_for_docs(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = settings.docs_username
+    correct_password = settings.docs_password
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 
 

@@ -29,12 +29,13 @@ class Settings(BaseSettings):
     ERROR_GROUP: str = os.getenv("ERROR_GROUP")
     ERROR_BOT: str = os.getenv("ERROR_BOT")
 
-    # admin_role:str = os.getenv('ADMIN_ROLE')
-    # admin_password:str = os.getenv('ADMIN_PASSWORD')
+    docs_username: str = os.getenv("DOCS_USERNAME")
+    docs_password: str = os.getenv("DOCS_PASSWORD")
 
 
     class Config:
         env_file = ".env"  # Specify the environment file to load
+        extra = "allow"
 
 
 # Initialize settings
