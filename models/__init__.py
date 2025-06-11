@@ -17,5 +17,6 @@ from .invoices import Invoices
 from .files import Files
 from .logs import Logs
 from .budgets import Budgets
+from .limits import Limits
 from .transactions import Transactions
 from .role_department_relations import RoleDepartments

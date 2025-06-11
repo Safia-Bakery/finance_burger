@@ -24,6 +24,7 @@ from models.roles import Roles
 from models.suppliers import Suppliers
 from models.transactions import Transactions
 from models.users import Users
+from models.limits import Limits
 
 
 class PermissionGroupDAO(BaseDAO):
@@ -243,6 +244,10 @@ class FileDAO(BaseDAO):
 
 class LogDAO(BaseDAO):
     model = Logs
+
+
+class LimitDAO(BaseDAO):
+    model = Limits
 
 
 class BudgetDAO(BaseDAO):
@@ -507,15 +512,20 @@ class TransactionDAO(BaseDAO):
         result = session.query(
             func.date(Requests.payment_time),
             PaymentTypes.name,
-            func.sum(-Transactions.value)
+            func.sum(-Transactions.value),
+            func.coalesce(func.sum(Limits.value), 0)
         ).join(
             Requests, Transactions.request_id == Requests.id
         ).join(
             PaymentTypes, Requests.payment_type_id == PaymentTypes.id
+        ).join(
+            Limits,
+            func.date(Requests.payment_time).between(Limits.start_date, Limits.finish_date),
+            isouter=True
         ).filter(
             and_(
                 func.date(Requests.payment_time).between(start_date, finish_date),
-                Transactions.status.in_([1, 2, 3, 5])
+                Transactions.status.in_([1, 2, 3, 5, 6])
             )
         ).group_by(
             func.date(Requests.payment_time),

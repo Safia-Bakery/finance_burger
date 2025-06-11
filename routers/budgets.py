@@ -107,7 +107,7 @@ async def get_budget_balance(
 
 
 @budgets_router.get("/calendar-budgets")
-async def get_budget_calendar_balance(
+async def get_calendar_balance(
         department_id: UUID,
         expense_type_id: UUID,
         created_date: Optional[date],
