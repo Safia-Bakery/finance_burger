@@ -28,6 +28,7 @@ from routers.budgets import budgets_router
 from routers.transactions import transactions_router
 from routers.transfers import transfers_router
 from routers.payer_companies import payer_companies_router
+from routers.limits import limits_router
 from utils.utils import get_current_user_for_docs
 
 
@@ -62,6 +63,7 @@ main_router.include_router(clients_router, tags=['Clients'])
 main_router.include_router(departments_router, tags=['Departments'])
 main_router.include_router(payer_companies_router, tags=['Payer Companies'])
 main_router.include_router(budgets_router, tags=['Budgets'])
+main_router.include_router(limits_router, tags=['Limits'])
 main_router.include_router(transactions_router, tags=['Transactions'])
 main_router.include_router(expense_types_router, tags=['Expense Types'])
 main_router.include_router(payment_types_router, tags=['Payment Types'])
