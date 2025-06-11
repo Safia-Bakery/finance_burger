@@ -1,5 +1,5 @@
-from datetime import date
-from typing import List
+from datetime import date, datetime
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -44,7 +44,19 @@ async def get_budget_list(
     objs = await BudgetDAO.get_by_attributes(session=db, filters=filters)
     for obj in objs:
         budget = (await BudgetDAO.get_budget_sum(session=db, budget_id=obj.id))[0]
+        budget = budget if budget is not None else 0
         obj.value = budget
+        expense = (await BudgetDAO.get_filtered_budget_expense(
+            session=db,
+            department_id=department_id,
+            expense_type_id=obj.expense_type_id,
+            start_date=start_date,
+            finish_date=finish_date
+        ))[0]
+        expense = -expense if expense is not None else 0
+        obj.expense_value = expense
+        balance = budget - expense
+        obj.balance_value = balance
 
     return objs
 
@@ -54,6 +66,8 @@ async def get_budget_list(
 async def get_budget_balance(
         department_id: UUID,
         expense_type_id: UUID,
+        start_date: Optional[date] = None,
+        finish_date: Optional[date] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Бюджеты": ["read"]}))
 ):
@@ -61,13 +75,19 @@ async def get_budget_balance(
         "department_id": department_id,
         "expense_type_id": expense_type_id
     }
+    if start_date is not None:
+        filters["start_date"] = start_date
+    if finish_date is not None:
+        filters["finish_date"] = finish_date
+
     current_date = date.today()
     obj = await BudgetDAO.get_by_attributes(session=db, filters=filters, first=True)
     budget = (await BudgetDAO.get_filtered_budget_sum(
         session=db,
         department_id=department_id,
         expense_type_id=expense_type_id,
-        current_date=current_date
+        start_date=current_date if start_date is None else start_date,
+        finish_date=current_date if finish_date is None else finish_date
     ))[0]
     budget = budget if budget is not None else 0
     # print("budget: ", budget)
@@ -75,7 +95,8 @@ async def get_budget_balance(
         session=db,
         department_id=department_id,
         expense_type_id=expense_type_id,
-        current_date=current_date
+        start_date=current_date if start_date is None else start_date,
+        finish_date=current_date if finish_date is None else finish_date
     ))[0]
     # print("expense: ", expense)
     expense = -expense if expense is not None else 0
@@ -85,3 +106,31 @@ async def get_budget_balance(
 
 
 
+@budgets_router.get("/calendar-budgets")
+async def get_budget_calendar_balance(
+        department_id: UUID,
+        expense_type_id: UUID,
+        created_date: Optional[date],
+        db: Session = Depends(get_db),
+        current_user: dict = Depends(PermissionChecker(required_permissions={"Бюджеты": ["read"]}))
+):
+    budget = await BudgetDAO.get_budget_by_attributes(session=db, department_id=department_id, expense_type_id=expense_type_id, created_date=created_date)
+    start_date = budget.start_date
+    finish_date = budget.finish_date
+    difference = finish_date - start_date
+    days = difference.days + 1
+    if days > 1:
+        pass
+    budget_details = await BudgetDAO.get_calendar_budget_details(
+        session=db,
+        start_date=start_date,
+        finish_date=finish_date,
+        budget_id=budget.id,
+        department_id=department_id,
+        expense_type_id=expense_type_id,
+        days=days
+    )
+
+    data = [row._asdict() for row in budget_details]
+
+    return data

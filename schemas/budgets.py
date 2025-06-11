@@ -13,6 +13,8 @@ class Budgets(TunedModel):
     expense_type: Optional[ExpenseTypes] = None
     department: Optional[Departments] = None
     value: Optional[float] = None
+    expense_value: Optional[float] = None
+    balance_value: Optional[float] = None
     created_at: Optional[datetime]
 
 

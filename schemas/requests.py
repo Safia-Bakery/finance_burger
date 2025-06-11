@@ -9,6 +9,7 @@ from schemas.departments import Departments
 from schemas.expense_types import ExpenseTypes
 from schemas.invoices import Invoice
 from schemas.logs import Log
+from schemas.payer_companies import PayerCompanies
 from schemas.payment_types import PaymentTypes
 
 
@@ -39,7 +40,7 @@ class Request(Requests):
     to_accounting: Optional[bool] = None
     to_transfer: Optional[bool] = None
     approve_comment: Optional[str] = None
-    payer_company: Optional[str] = None
+    payer_company: Optional[PayerCompanies] = None
     contract: Optional[Contract] = None
     invoice: Optional[Invoice] = None
     logs: Optional[List[Log]] = None
@@ -59,6 +60,8 @@ class CreateRequest(TunedModel):
     exchange_rate: Optional[float] = None
     to_accounting: Optional[bool] = False
     payment_type_id: UUID
+    payment_time: Optional[date] = None
+    payer_company_id: Optional[UUID] = None
     cash: Optional[float] = None
     payment_card: Optional[str] = None
     sap_code: str
@@ -77,7 +80,8 @@ class UpdateRequest(TunedModel):
     payment_time: Optional[date] = None
     payment_type_id: Optional[UUID] = None
     comment: Optional[str] = None
-    payer_company: Optional[str] = None
+    delay_reason: Optional[str] = None
+    payer_company_id: Optional[UUID] = None
     invoice: Optional[bool] = None
     file_paths: List[str] = None
     client_id: Optional[UUID] = None
@@ -97,4 +101,16 @@ class TransactionRequest(TunedModel):
 class GenerateExcel(TunedModel):
     start_date: date
     finish_date: date
+    number: Optional[int] = None
+    client: Optional[str] = None
+    department_id: Optional[UUID] = None
+    supplier: Optional[str] = None
+    expense_type_id: Optional[UUID] = None
+    payment_type_id: Optional[UUID] = None
+    payment_sum: Optional[float] = None
+    sap_code: Optional[str] = None
+    approved: Optional[bool] = None
+    created_at: Optional[date] = None
+    payment_date: Optional[date] = None
+    status: Optional[str] = None
 

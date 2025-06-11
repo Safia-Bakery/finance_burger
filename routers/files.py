@@ -23,7 +23,6 @@ files_router = APIRouter()
 @files_router.post("/files/upload")
 async def upload_files(
         files: List[UploadFile] = File(...),
-        # db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Файлы": ["create"]}))
 ):
     base_dir = "files"

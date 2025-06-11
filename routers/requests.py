@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Optional, List
 from uuid import UUID
 
@@ -13,6 +13,8 @@ from core.session import get_db
 from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO, UserDAO, ClientDAO
 from schemas.requests import Requests, Request, UpdateRequest, CreateRequest, GenerateExcel
 from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender, excel_generator
+
+
 
 requests_router = APIRouter()
 
@@ -318,7 +320,9 @@ async def update_request(
             f"📈 Курс валюты: {request.exchange_rate if request.exchange_rate else ''}\n"
             f"💳 Тип оплаты: {request.payment_type.name}\n"
             f"💳 Карта перевода: {request.payment_card if request.payment_card is not None else ''}\n"
-            f"📜 № Заявки в SAP: {request.sap_code}\n\n"
+            f"📜 № Заявки в SAP: {request.sap_code}\n"
+            f"🕓 Дата оплаты: {request.payment_time}\n"
+            f"💸 Фирма-плательщик: {request.payer_company.name if request.payer_company is not None else ''}\n\n"
             f"📝 Комментарии: {request.description}\n\n"
             + (f"📃 Документы оплаты 👇\n" if request.invoice else "")
         )
@@ -376,7 +380,16 @@ async def get_excel_file(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read"]}))
 ):
-    query = await RequestDAO.get_excel(session=db, start_date=body.start_date, finish_date=body.finish_date)
+    body.finish_date += timedelta(days=1)
+    body_dict = body.model_dump(exclude_unset=True)
+    filters = {k: v for k, v in body_dict.items() if v is not None}
+    if "client" in body_dict:
+        query = await ClientDAO.get_all(session=db, filters={"fullname": body.client})
+        clients = db.execute(query).scalars().all()
+        filters.pop("client", None)
+        filters["client_id"] = [client.id for client in clients]
+
+    query = await RequestDAO.get_excel(session=db, filters=filters)
     file_name = excel_generator(data=query)
     return {'file_name': file_name}
 

@@ -1,31 +1,29 @@
 from datetime import timedelta, date
-from typing import Dict, Any
 
-from dns.reversename import to_address
-from sqlalchemy import func, and_, text, or_
+from sqlalchemy import func, and_, text, or_, case, select, literal_column, cast, Date
 from sqlalchemy.orm import Session
 
 from dal.base import BaseDAO
-from models.roles import Roles
-from models.role_department_relations import RoleDepartments
+from models.accesses import Accesses
+from models.budgets import Budgets
+from models.buyers import Buyers
+from models.clients import Clients
+from models.contracts import Contracts
+from models.departments import Departments
+from models.expense_types import ExpenseTypes
+from models.files import Files
+from models.invoices import Invoices
+from models.logs import Logs
+from models.payer_companies import PayerCompanies
+from models.payment_types import PaymentTypes
 from models.permission_groups import PermissionGroups
 from models.permissions import Permissions
-from models.users import Users
-from models.accesses import Accesses
-from models.departments import Departments
-from models.clients import Clients
-from models.expense_types import ExpenseTypes
-from models.payment_types import PaymentTypes
-from models.buyers import Buyers
-from models.suppliers import Suppliers
 from models.requests import Requests
-from models.contracts import Contracts
-from models.invoices import Invoices
-from models.files import Files
-from models.logs import Logs
-from models.budgets import Budgets
+from models.role_department_relations import RoleDepartments
+from models.roles import Roles
+from models.suppliers import Suppliers
 from models.transactions import Transactions
-
+from models.users import Users
 
 
 class PermissionGroupDAO(BaseDAO):
@@ -50,6 +48,10 @@ class AccessDAO(BaseDAO):
 
 class UserDAO(BaseDAO):
     model = Users
+
+
+class PayerCompanyDAO(BaseDAO):
+    model = PayerCompanies
 
 
 class DepartmentDAO(BaseDAO):
@@ -208,11 +210,14 @@ class RequestDAO(BaseDAO):
     model = Requests
 
     @classmethod
-    async def get_excel(cls, session: Session, start_date, finish_date):
-        finish_date = finish_date + timedelta(days=1)
-        query = session.query(
-            cls.model
-        ).join(
+    async def get_excel(cls, session: Session, filters):
+
+        query = await cls.get_all(
+            session=session,
+            filters=filters if filters else None
+        )
+        print("query all: ", query)
+        query = query.join(
             Departments, cls.model.department_id == Departments.id
         ).join(
             ExpenseTypes, cls.model.expense_type_id == ExpenseTypes.id
@@ -220,10 +225,8 @@ class RequestDAO(BaseDAO):
             Clients, cls.model.client_id == Clients.id
         ).join(
             PaymentTypes, cls.model.payment_type_id == PaymentTypes.id
-        ).filter(
-            func.date(cls.model.created_at).between(start_date, finish_date)
         )
-        return query.order_by(cls.model.number.desc()).all()
+        return session.execute(query.order_by(cls.model.number.desc())).scalars().all()
 
 
 class ContractDAO(BaseDAO):
@@ -258,7 +261,7 @@ class BudgetDAO(BaseDAO):
         return result
 
     @classmethod
-    async def get_filtered_budget_sum(cls, session: Session, department_id, expense_type_id, current_date: date):
+    async def get_filtered_budget_sum(cls, session: Session, department_id, expense_type_id, start_date: date, finish_date: date):
         result = session.query(
             func.sum(Transactions.value)
         ).join(
@@ -268,17 +271,38 @@ class BudgetDAO(BaseDAO):
                 Budgets.department_id == department_id,
                 Budgets.expense_type_id == expense_type_id,
                 Transactions.status == 5,
-                current_date >= Budgets.start_date,
-                current_date <= Budgets.finish_date
+                start_date >= Budgets.start_date,
+                start_date <= Budgets.finish_date,
+                finish_date >= Budgets.start_date,
+                finish_date <= Budgets.finish_date
+                # Budgets.start_date.between(start_date, finish_date),
+                # Budgets.finish_date.between(start_date, finish_date)
             )
         ).first()
         return result
 
 
     @classmethod
-    async def get_filtered_budget_expense(cls, session: Session, department_id, expense_type_id, current_date: date):
-        current_year = float(current_date.year)
-        current_month = float(current_date.month)
+    async def get_filtered_budget_expense(cls, session: Session, department_id, expense_type_id, start_date: date, finish_date: date):
+        # current_year = float(current_date.year)
+        # current_month = float(current_date.month)
+
+        # result = session.query(
+        #     func.sum(Requests.sum)
+        # ).join(
+        #     Logs, Logs.request_id == Requests.id
+        # ).filter(
+        #     and_(
+        #         Requests.department_id == department_id,
+        #         Requests.expense_type_id == expense_type_id,
+        #         Requests.status != 4,
+        #         Requests.approved == True,
+        #         Logs.approved == True,
+        #         func.date(Logs.created_at).between(start_date, finish_date)
+        #         # func.date_part('year', Transactions.created_at) == current_year,
+        #         # func.date_part('month', Transactions.created_at) == current_month
+        #     )
+        # ).first()
 
         result = session.query(
             func.sum(Transactions.value)
@@ -289,11 +313,136 @@ class BudgetDAO(BaseDAO):
                 Requests.department_id == department_id,
                 Requests.expense_type_id == expense_type_id,
                 Transactions.status != 4,
-                func.date_part('year', Transactions.created_at) == current_year,
-                func.date_part('month', Transactions.created_at) == current_month
+                Requests.status != 4,
+                Requests.approved == True,
+                func.date(Requests.payment_time).between(start_date, finish_date)
+                # func.date_part('year', Transactions.created_at) == current_year,
+                # func.date_part('month', Transactions.created_at) == current_month
+            )
+        ).first()
+
+        return result
+
+    @classmethod
+    async def get_budget_by_attributes(cls, session: Session, department_id, expense_type_id, created_date: date):
+        result = session.query(
+            Budgets
+        ).filter(
+            and_(
+                Budgets.department_id == department_id,
+                Budgets.expense_type_id == expense_type_id,
+                created_date >= Budgets.start_date,
+                created_date <= Budgets.finish_date
             )
         ).first()
         return result
+
+
+    @classmethod
+    async def get_calendar_budget_details(
+            cls,
+            session: Session,
+            start_date,
+            finish_date,
+            budget_id,
+            department_id,
+            expense_type_id,
+            days
+    ):
+        # --- CTE 1: Date Series ---
+        date_series_cte = select(
+            func.date(
+                func.generate_series(
+                    start_date,
+                    finish_date,
+                    literal_column("interval '1 day'")
+                )
+            ).label("date")
+        ).cte("date_series")
+
+        # --- CTE 2: Transactions Aggregated By Date ---
+        tx_date = func.date(Transactions.created_at)
+
+        if days > 1:
+            # Subquery to calculate budget
+            budget_scalar = (
+                select((func.sum(Transactions.value) / days).label("daily_budget"))
+                .where(
+                    and_(
+                        Transactions.value > 0,
+                        Transactions.status == 5,
+                        Transactions.budget_id == budget_id
+                    )
+                )
+                .scalar_subquery()
+            )
+            transactions_cte = select(
+                tx_date.label("date"),
+                func.sum(case((Transactions.value < 0, -Transactions.value), else_=0)).label("expense")
+            ).join(
+                Requests, Transactions.request_id == Requests.id
+            ).filter(
+                and_(
+                    Transactions.status == 5,
+                    Requests.department_id == department_id,
+                    Requests.expense_type_id == expense_type_id
+                )
+            ).group_by(tx_date).cte("tx_agg")
+
+            # --- Final Query: Join transactions to date_series ---
+            result_query = select(
+                date_series_cte.c.date.label("date"),
+                budget_scalar.label("budget"),
+                func.coalesce(transactions_cte.c.expense, 0).label("expense"),
+                (budget_scalar - func.coalesce(transactions_cte.c.expense, 0)).label("balance")
+            ).select_from(
+                date_series_cte.outerjoin(
+                    transactions_cte,
+                    transactions_cte.c.date == date_series_cte.c.date
+                )
+            ).order_by(date_series_cte.c.date)
+
+        else:
+            transactions_cte = select(
+                tx_date.label("date"),
+                func.sum(
+                    case((Transactions.value > 0, Transactions.value), else_=0)
+                ).label("budget"),
+                func.sum(
+                    case((Transactions.value < 0, -Transactions.value), else_=0)
+                ).label("expense"),
+                func.sum(Transactions.value).label("balance")
+            ).outerjoin(
+                Requests, Transactions.request_id == Requests.id
+            ).filter(
+                and_(
+                    Transactions.status == 5,
+                    or_(
+                        Transactions.budget_id == budget_id,
+                        and_(
+                            Requests.department_id == department_id,
+                            Requests.expense_type_id == expense_type_id
+                        )
+                    )
+                )
+            ).group_by(tx_date).cte("tx_agg")
+
+
+            # --- Final Query: Join transactions to date_series ---
+            result_query = select(
+                date_series_cte.c.date.label("date"),
+                transactions_cte.c.budget.label("budget"),
+                func.coalesce(transactions_cte.c.expense, 0).label("expense"),
+                func.coalesce(transactions_cte.c.balance, 0).label("balance")
+            ).select_from(
+                date_series_cte.outerjoin(
+                    transactions_cte,
+                    transactions_cte.c.date == date_series_cte.c.date
+                )
+            ).order_by(date_series_cte.c.date)
+
+        results = session.execute(result_query).fetchall()
+        return results
 
 
 class TransactionDAO(BaseDAO):

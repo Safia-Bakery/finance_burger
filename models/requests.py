@@ -22,9 +22,11 @@ class Requests(Base):
     exchange_rate = Column(DECIMAL)
     cash = Column(DECIMAL)
     description = Column(Text)
+    delay_reason = Column(Text)
     comment = Column(Text)
     approve_comment = Column(Text)
-    payer_company = Column(String)
+    payer_company_id = Column(UUID, ForeignKey("payer_companies.id", ondelete="SET NULL"), nullable=True)
+    payer_company = relationship('PayerCompanies', back_populates='requests')
     status = Column(Integer)
     contract = relationship('Contracts', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'
     invoice = relationship('Invoices', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'

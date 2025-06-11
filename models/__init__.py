@@ -5,6 +5,7 @@ from .accesses import Accesses
 from .users import Users
 from .clients import Clients
 from .departments import Departments
+from .payer_companies import PayerCompanies
 
 from .buyers import Buyers
 from .suppliers import Suppliers

@@ -1,14 +1,9 @@
 import re
-from datetime import date
 from typing import List, Any, Dict
 
-from fastapi_pagination import request
 from sqlalchemy import select, inspect, update, delete, and_, func
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, Session, contains_eager
-
-from models import Requests, Contracts, Files
+from sqlalchemy.orm import joinedload, Session
 
 
 class BaseDAO:
@@ -79,8 +74,8 @@ class BaseDAO:
 
                     column = getattr(cls.model, k, None)
 
-                    # if k == "created_at_start" or k == "created_at_finish":
-                    #     column = getattr(cls.model, "created_at", None)
+                    if k == "start_date" or k == "finish_date":
+                        column = getattr(cls.model, "created_at", None)
 
                     if column is not None:
                         if k == "status":
@@ -95,6 +90,10 @@ class BaseDAO:
                                 conditions.append(func.date(column) == v)
                         elif k == "created_at":
                             conditions.append(func.date(column) == v)
+                        elif k == "start_date":
+                            conditions.append(func.date(column) >= v)
+                        elif k == "finish_date":
+                            conditions.append(func.date(column) <= v)
                         else:
                             if isinstance(v, str):
                                 conditions.append(column.ilike(f"%{v}%"))
@@ -102,12 +101,6 @@ class BaseDAO:
                                 conditions.append(column.in_(v))
                             else:
                                 conditions.append(column == v)
-
-                        # elif k == "created_at_start" or k == "created_at_finish":
-                        #     if k == "created_at_start":
-                        #         conditions.append(column >= v)
-                        #     elif k == "created_at_finish":
-                        #         conditions.append(column <= v)
 
                 if conditions:
                     query = query.filter(and_(*conditions))  # Apply all conditions
@@ -164,11 +157,8 @@ class BaseDAO:
                 .filter_by(**filters)
                 # .returning(cls.model)
             )
-            result = session.execute(query)
+            session.execute(query)
             session.commit()
-            # session.flush()
-            # deleted_objects = result.scalars().unique().all()
-            # deleted_object = result.scalars().first()
             return True
 
         except SQLAlchemyError as e:

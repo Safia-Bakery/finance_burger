@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, func, ForeignKey, DECIMAL, Date
+from sqlalchemy import Column, func, ForeignKey, DECIMAL, Date, Integer
 from sqlalchemy import String, UUID, Boolean, DateTime
 from sqlalchemy.orm import relationship
 
@@ -14,10 +14,9 @@ class Budgets(Base):
     expense_type = relationship('ExpenseTypes', back_populates='budgets')
     department_id = Column(UUID, ForeignKey("departments.id"))
     department = relationship('Departments', back_populates='budgets')
-    # value = Column(DECIMAL)
-    # comment = Column(String)
     start_date = Column(Date)
     finish_date = Column(Date)
+    status = Column(Integer)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     transactions = relationship('Transactions', back_populates='budget')
