@@ -106,11 +106,11 @@ async def get_department(
     )
     # print("budget: ", budget)
 
-    for year, month, type, sum, pending_requests in budget:
+    for year, month, type, sum, pending_requests, delayed_requests in budget:
         result_dict[int(year)][int(month)][type] = -float(sum) if type in ["expense", "pending", "delayed"] else float(sum)
         result_dict[int(year)][int(month)]["balance"] = result_dict[int(year)][int(month)]["budget"] - result_dict[int(year)][int(month)]["expense"]
         result_dict[int(year)][int(month)]["pending_requests"] = pending_requests
-        result_dict[int(year)][int(month)]["delayed_requests"] = pending_requests
+        result_dict[int(year)][int(month)]["delayed_requests"] = delayed_requests
 
     # Convert defaultdict to a list of dictionaries
     department.monthly_budget = [{year: dict(months)} for year, months in result_dict.items()]

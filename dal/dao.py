@@ -109,10 +109,10 @@ class DepartmentDAO(BaseDAO):
                     INNER JOIN requests r ON t.request_id = r.id
                     WHERE t.request_id IS NOT NULL 
                     AND r.department_id = :department_id 
-                    AND t.status = 0
-                    AND r.status = 0 
-                    AND EXTRACT(YEAR FROM t.created_at::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
-                    AND EXTRACT(MONTH FROM t.created_at::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
+                    AND t.status = 6
+                    AND r.status = 6 
+                    AND EXTRACT(YEAR FROM r.payment_time::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
+                    AND EXTRACT(MONTH FROM r.payment_time::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
                 ) AS delayed_requests
             
             FROM (
