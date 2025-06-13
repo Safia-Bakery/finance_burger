@@ -194,9 +194,10 @@ async def update_request(
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку !")
 
     if body.payment_type_id is not None:
-        if "change_payment_type" not in current_user["permissions"]["Заявки"]:
-            body_dict.pop("payment_type_id", None)
-            raise HTTPException(status_code=404, detail="У вас нет прав изменить тип оплаты заявки !")
+        if request.payment_type_id != body.payment_type_id:
+            if "change_payment_type" not in current_user["permissions"]["Заявки"]:
+                body_dict.pop("payment_type_id", None)
+                raise HTTPException(status_code=404, detail="У вас нет прав изменить тип оплаты заявки !")
 
 
     if body.to_accounting is True:
