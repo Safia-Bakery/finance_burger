@@ -97,10 +97,24 @@ class DepartmentDAO(BaseDAO):
                     INNER JOIN requests r ON t.request_id = r.id
                     WHERE t.request_id IS NOT NULL 
                     AND r.department_id = :department_id 
-                    AND t.status = 0 
+                    AND t.status = 0
+                    AND r.status = 0 
                     AND EXTRACT(YEAR FROM t.created_at::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
                     AND EXTRACT(MONTH FROM t.created_at::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
-                ) AS pending_requests
+                ) AS pending_requests,
+                (
+                    SELECT 
+                        COUNT(r.id) AS value
+                    FROM transactions t
+                    INNER JOIN requests r ON t.request_id = r.id
+                    WHERE t.request_id IS NOT NULL 
+                    AND r.department_id = :department_id 
+                    AND t.status = 0
+                    AND r.status = 0 
+                    AND EXTRACT(YEAR FROM t.created_at::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
+                    AND EXTRACT(MONTH FROM t.created_at::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
+                ) AS delayed_requests
+            
             FROM (
                     SELECT 
                         generate_series(b.start_date, b.finish_date, INTERVAL '1 month') AS month_series,
@@ -117,15 +131,16 @@ class DepartmentDAO(BaseDAO):
                     UNION ALL
                 
                     SELECT 
-                        t.created_at AS month_series,
+                        r.payment_time AS month_series,
                         'expense' AS value_type,
                         t.value AS value
                     FROM transactions t
                     INNER JOIN requests r ON t.request_id = r.id
                     WHERE t.request_id IS NOT NULL 
                     AND r.department_id = :department_id 
-                    AND t.status IN (1, 2, 3, 5) 
-                    AND t.created_at::DATE BETWEEN :start_date AND :finish_date
+                    AND t.status <> 4 
+                    AND r.approved IS True
+                    AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
                     
                     UNION ALL
                     
@@ -138,7 +153,22 @@ class DepartmentDAO(BaseDAO):
                     WHERE t.request_id IS NOT NULL 
                     AND r.department_id = :department_id 
                     AND t.status = 0 
+                    AND r.status = 0 
                     AND t.created_at::DATE BETWEEN :start_date AND :finish_date
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        r.payment_time AS month_series,
+                        'delayed' AS value_type,
+                        t.value AS value
+                    FROM transactions t
+                    INNER JOIN requests r ON t.request_id = r.id
+                    WHERE t.request_id IS NOT NULL 
+                    AND r.department_id = :department_id 
+                    AND t.status = 6
+                    AND r.status = 6 
+                    AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
             
             ) AS budget_months
             GROUP BY year, month, value_type, pending_requests

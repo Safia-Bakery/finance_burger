@@ -91,13 +91,26 @@ async def get_department(
 
     # Group data by year
     # result_dict = defaultdict(dict)
-    result_dict = defaultdict(lambda: defaultdict(lambda: {"budget": 0.0, "expense": 0.0, "pending": 0.0, "balance": 0.0, "pending_requests": 0}))
+    result_dict = defaultdict(
+        lambda: defaultdict(
+            lambda: {
+                "budget": 0.0,
+                "expense": 0.0,
+                "pending": 0.0,
+                "delayed": 0.0,
+                "balance": 0.0,
+                "pending_requests": 0,
+                "delayed_requests": 0
+            }
+        )
+    )
     # print("budget: ", budget)
 
     for year, month, type, sum, pending_requests in budget:
-        result_dict[int(year)][int(month)][type] = -float(sum) if type == "expense" or type == "pending" else float(sum)
+        result_dict[int(year)][int(month)][type] = -float(sum) if type in ["expense", "pending", "delayed"] else float(sum)
         result_dict[int(year)][int(month)]["balance"] = result_dict[int(year)][int(month)]["budget"] - result_dict[int(year)][int(month)]["expense"]
         result_dict[int(year)][int(month)]["pending_requests"] = pending_requests
+        result_dict[int(year)][int(month)]["delayed_requests"] = pending_requests
 
     # Convert defaultdict to a list of dictionaries
     department.monthly_budget = [{year: dict(months)} for year, months in result_dict.items()]
