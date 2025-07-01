@@ -113,7 +113,20 @@ class DepartmentDAO(BaseDAO):
                     AND r.status = 6 
                     AND EXTRACT(YEAR FROM r.payment_time::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
                     AND EXTRACT(MONTH FROM r.payment_time::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
-                ) AS delayed_requests
+                ) AS delayed_requests,
+                (
+                    SELECT 
+                        COUNT(r.id) AS value
+                    FROM transactions t
+                    INNER JOIN requests r ON t.request_id = r.id
+                    WHERE t.request_id IS NOT NULL 
+                    AND r.department_id = :department_id 
+                    AND t.status = 0
+                    AND r.status = 0 
+                    AND r.approved IS False 
+                    AND EXTRACT(YEAR FROM r.payment_time::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
+                    AND EXTRACT(MONTH FROM r.payment_time::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
+                ) AS not_approved_requests
             
             FROM (
                     SELECT 
@@ -171,7 +184,7 @@ class DepartmentDAO(BaseDAO):
                     AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
             ) AS budget_months
             
-            GROUP BY year, month, value_type, pending_requests, delayed_requests
+            GROUP BY year, month, value_type, pending_requests, delayed_requests, not_approved_requests
             ORDER BY year, month, value_type;
         """
         params = {
@@ -352,6 +365,47 @@ class BudgetDAO(BaseDAO):
                     Requests.expense_type_id == expense_type_id,
                     Transactions.status != 4,
                     Requests.status != 4,
+                    Requests.approved == True,
+                    func.date(Requests.payment_time).between(start_date, finish_date)
+                )
+            ).first()
+
+        return result
+
+    @classmethod
+    async def get_budget_delayed_sum(cls, session: Session, department_id, expense_type_id, start_date: date, finish_date: date):
+
+        if start_date == finish_date:
+            current_year = float(start_date.year)
+            current_month = float(start_date.month)
+
+            result = session.query(
+                func.sum(Transactions.value)
+            ).join(
+                Requests, Transactions.request_id == Requests.id
+            ).filter(
+                and_(
+                    Requests.department_id == department_id,
+                    Requests.expense_type_id == expense_type_id,
+                    Transactions.status == 6,
+                    Requests.status == 6,
+                    Requests.approved == True,
+                    func.date_part('year', Requests.payment_time) == current_year,
+                    func.date_part('month', Requests.payment_time) == current_month
+                )
+            ).first()
+
+        else:
+            result = session.query(
+                func.sum(Transactions.value)
+            ).join(
+                Requests, Transactions.request_id == Requests.id
+            ).filter(
+                and_(
+                    Requests.department_id == department_id,
+                    Requests.expense_type_id == expense_type_id,
+                    Transactions.status == 6,
+                    Requests.status == 6,
                     Requests.approved == True,
                     func.date(Requests.payment_time).between(start_date, finish_date)
                 )

@@ -15,6 +15,7 @@ class Budgets(TunedModel):
     value: Optional[float] = None
     expense_value: Optional[float] = None
     balance_value: Optional[float] = None
+    delayed: Optional[float] = None
     created_at: Optional[datetime]
 
 

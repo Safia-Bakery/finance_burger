@@ -57,6 +57,14 @@ async def get_budget_list(
         obj.expense_value = expense
         balance = budget - expense
         obj.balance_value = balance
+        delayed = (await BudgetDAO.get_budget_delayed_sum(
+            session=db,
+            department_id=department_id,
+            expense_type_id=obj.expense_type_id,
+            start_date=start_date,
+            finish_date=finish_date
+        ))[0]
+        obj.delayed = -delayed if delayed is not None else 0
 
     return objs
 

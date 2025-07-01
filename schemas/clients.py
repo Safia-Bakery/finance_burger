@@ -1,8 +1,18 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from schemas.base_model import TunedModel
+
+
+class ClientDepartments(TunedModel):
+    id: Optional[UUID] = None
+    name: Optional[str] = None
+    is_active: Optional[bool] = None
+    over_budget: Optional[bool] = None
+    total_budget: Optional[float] = None
+    created_at: Optional[datetime]
+
 
 
 class Clients(TunedModel):
@@ -11,12 +21,14 @@ class Clients(TunedModel):
     phone: Optional[str] = None
     is_active: Optional[bool]
     tg_id: Optional[int]
+    web_user: Optional[bool] = None
     created_at: Optional[datetime]
 
 
 
 class Client(Clients):
     language: Optional[str]
+    department: Optional[List[ClientDepartments]] = None
     updated_at: Optional[datetime] = None
 
 
