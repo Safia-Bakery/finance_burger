@@ -67,7 +67,7 @@ async def get_department_list(
     for department in departments:
         budget = (
             await DepartmentDAO.get_department_total_budget(
-                session=db, department_id=department.id, start_date=start_date, finish_date=finish_date
+                session=db, department_id=department.id, start_date=start_date, finish_date=finish_date, payment_date=None
             )
         )[0]
         department.total_budget = budget

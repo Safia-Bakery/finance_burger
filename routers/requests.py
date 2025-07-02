@@ -169,6 +169,7 @@ async def get_request(
         payment_date = obj.payment_time.date()
         department_id = obj.department_id
         expense_type_id = obj.expense_type_id
+        request_sum = obj.sum
         budget = (await BudgetDAO.get_filtered_budget_sum(
             session=db,
             department_id=department_id,
@@ -185,17 +186,19 @@ async def get_request(
             finish_date=payment_date
         ))[0]
         expense = -expense if expense is not None else 0
-        obj.expense_type_budget = budget - expense
+        obj.expense_type_budget = budget - expense - request_sum
 
         department_budget = (
             await DepartmentDAO.get_department_total_budget(
                 session=db,
                 department_id=department_id,
-                start_date=payment_date,
-                finish_date=payment_date
+                start_date=None,
+                finish_date=None,
+                payment_date=payment_date
             )
         )[0]
-        obj.department_budget = department_budget
+        department_budget = department_budget if department_budget is not None else 0
+        obj.department_budget = department_budget - request_sum
 
     return obj
 

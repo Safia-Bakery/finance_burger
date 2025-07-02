@@ -59,7 +59,7 @@ class DepartmentDAO(BaseDAO):
     model = Departments
 
     @classmethod
-    async def get_department_total_budget(cls, session: Session, department_id, start_date, finish_date):
+    async def get_department_total_budget(cls, session: Session, department_id, start_date, finish_date, payment_date):
         result = session.query(
             func.sum(Transactions.value)
         ).join(
@@ -76,6 +76,13 @@ class DepartmentDAO(BaseDAO):
                 and_(
                     Budgets.start_date.between(start_date, finish_date),
                     Budgets.finish_date.between(start_date, finish_date)
+                )
+            )
+        elif payment_date is not None:
+            result = result.filter(
+                and_(
+                    payment_date >= Budgets.start_date,
+                    payment_date <= Budgets.finish_date
                 )
             )
 
