@@ -45,6 +45,8 @@ class Request(Requests):
     invoice: Optional[Invoice] = None
     logs: Optional[List[Log]] = None
     updated_at: Optional[datetime] = None
+    expense_type_budget: Optional[float] = 0.0
+    department_budget: Optional[float] = 0.0
 
 
 class CreateRequest(TunedModel):

@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from core.session import get_db
-from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO, UserDAO, ClientDAO
+from dal.dao import RequestDAO, InvoiceDAO, ContractDAO, FileDAO, LogDAO, TransactionDAO, UserDAO, ClientDAO, BudgetDAO, \
+    DepartmentDAO
 from schemas.requests import Requests, Request, UpdateRequest, CreateRequest, GenerateExcel
 from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender, excel_generator
 
@@ -163,6 +164,37 @@ async def get_request(
         obj.currency_sum = obj.sum / obj.exchange_rate
     else:
         obj.currency_sum = obj.sum
+
+    payment_date = obj.payment_time.date()
+    department_id = obj.department_id
+    expense_type_id = obj.expense_type_id
+    budget = (await BudgetDAO.get_filtered_budget_sum(
+        session=db,
+        department_id=department_id,
+        expense_type_id=expense_type_id,
+        start_date=payment_date,
+        finish_date=payment_date
+    ))[0]
+    budget = budget if budget is not None else 0
+    expense = (await BudgetDAO.get_filtered_budget_expense(
+        session=db,
+        department_id=department_id,
+        expense_type_id=expense_type_id,
+        start_date=payment_date,
+        finish_date=payment_date
+    ))[0]
+    expense = -expense if expense is not None else 0
+    obj.expense_type_budget = budget - expense
+
+    department_budget = (
+        await DepartmentDAO.get_department_total_budget(
+            session=db,
+            department_id=department_id,
+            start_date=payment_date,
+            finish_date=payment_date
+        )
+    )[0]
+    obj.department_budget = department_budget
 
     return obj
 
