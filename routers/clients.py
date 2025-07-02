@@ -71,7 +71,19 @@ async def get_client(
                     session=db, department_id=department.id, start_date=start_date, finish_date=finish_date, payment_date=None
                 )
             )[0]
-            department.total_budget = budget
+            budget = budget if budget is not None else 0
+            expense = (
+                await DepartmentDAO.get_department_expense(
+                    session=db,
+                    department_id=department.id,
+                    start_date=start_date,
+                    finish_date=finish_date
+                )
+            )[0]
+            expense = expense if expense is not None else 0
+            department.balance = budget - expense
+
+
 
     return obj
 

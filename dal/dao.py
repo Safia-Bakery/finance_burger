@@ -90,6 +90,27 @@ class DepartmentDAO(BaseDAO):
 
 
     @classmethod
+    async def get_department_expense(cls, session: Session, department_id, start_date, finish_date):
+        result = session.query(
+            func.sum(Transactions.value)
+        ).join(
+            Requests
+        ).filter(
+            and_(
+                Requests.department_id == department_id,
+                Transactions.request_id.isnot(None),
+                Transactions.status != 4,
+                Requests.status != 4,
+                Requests.approved == True,
+                func.date(Requests.payment_time).between(start_date, finish_date)
+            )
+        ).group_by(
+
+        ).first()
+        return result
+
+
+    @classmethod
     async def get_department_monthly_budget(cls, session: Session, department_id, start_date, finish_date):
         query = """
             SELECT 
@@ -217,24 +238,6 @@ class DepartmentDAO(BaseDAO):
 
         result = session.execute(text(query), params).fetchall()
         return result
-
-    # @classmethod
-    # async def get_department_monthly_budget(cls, session: Session, department_id, start_date, finish_date):
-    #     result = session.query(
-    #         func.sum(Transactions.value)
-    #     ).join(
-    #         Budgets
-    #     ).filter(
-    #         and_(
-    #             Budgets.department_id == department_id,
-    #             Budgets.start_date.between(start_date, finish_date),
-    #             Budgets.finish_date.between(start_date, finish_date),
-    #             Transactions.budget_id.isnot(None)
-    #         )
-    #     ).group_by(
-    #
-    #     ).first()
-    #     return result
 
 
 class ClientDAO(BaseDAO):

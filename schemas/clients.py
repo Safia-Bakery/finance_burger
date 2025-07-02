@@ -10,7 +10,7 @@ class ClientDepartments(TunedModel):
     name: Optional[str] = None
     is_active: Optional[bool] = None
     over_budget: Optional[bool] = None
-    total_budget: Optional[float] = None
+    balance: Optional[float] = None
     created_at: Optional[datetime]
 
 

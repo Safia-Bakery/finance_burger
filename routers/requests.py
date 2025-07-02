@@ -156,6 +156,8 @@ async def get_request_list(
 @requests_router.get("/requests/{id}", response_model=Request)
 async def get_request(
         id: UUID,
+        start_date: Optional[date] = None,
+        finish_date: Optional[date] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting", "transfer"]}))
 ):
@@ -192,13 +194,22 @@ async def get_request(
             await DepartmentDAO.get_department_total_budget(
                 session=db,
                 department_id=department_id,
-                start_date=None,
-                finish_date=None,
-                payment_date=payment_date
+                start_date=start_date,
+                finish_date=finish_date,
+                payment_date=None
             )
         )[0]
         department_budget = department_budget if department_budget is not None else 0
-        obj.department_budget = department_budget - request_sum
+        department_expense = (
+            await DepartmentDAO.get_department_expense(
+                session=db,
+                department_id=department_id,
+                start_date=start_date,
+                finish_date=finish_date
+            )
+        )[0]
+        department_expense = department_expense if department_expense is not None else 0
+        obj.department_budget = department_budget - department_expense - request_sum
 
     return obj
 
