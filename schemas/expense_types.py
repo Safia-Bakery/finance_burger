@@ -14,6 +14,7 @@ class ExpenseTypes(TunedModel):
 
 class ExpenseType(ExpenseTypes):
     description: Optional[str] = None
+    purchasable: Optional[bool] = None
     updated_at: Optional[datetime] = None
 
 

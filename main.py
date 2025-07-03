@@ -29,6 +29,7 @@ from routers.transactions import transactions_router
 from routers.transfers import transfers_router
 from routers.payer_companies import payer_companies_router
 from routers.limits import limits_router
+from routers.purchase import purchase_router
 from utils.utils import get_current_user_for_docs
 
 
@@ -72,6 +73,7 @@ main_router.include_router(suppliers_router, tags=['Suppliers'])
 main_router.include_router(requests_router, tags=['Requests'])
 main_router.include_router(statistics_router, tags=['Statistics'])
 main_router.include_router(accounting_router, tags=['Accounting'])
+main_router.include_router(purchase_router, tags=['Purchase'])
 main_router.include_router(transfers_router, tags=['Transfers'])
 main_router.include_router(logs_router, tags=['Logs'])
 main_router.include_router(files_router, tags=['Files'])

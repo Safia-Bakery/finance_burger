@@ -23,6 +23,7 @@ class Requests(TunedModel):
     sum: float = None
     sap_code: Optional[str] = None
     approved: Optional[bool] = None
+    purchase_approved: Optional[bool] = None
     created_at: Optional[datetime] = None
     payment_time: Optional[datetime] = None
     status: Optional[int] = None
@@ -75,6 +76,7 @@ class CreateRequest(TunedModel):
 class UpdateRequest(TunedModel):
     id: UUID
     approved: Optional[bool] = None
+    purchase_approved: Optional[bool] = None
     to_accounting: Optional[bool] = None
     to_transfer: Optional[bool] = None
     approve_comment: Optional[str] = None
