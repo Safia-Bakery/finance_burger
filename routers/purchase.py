@@ -1,19 +1,15 @@
-from datetime import datetime, date
+from datetime import date
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page, paginate
-from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import coalesce
 
 from core.session import get_db
-from dal.dao import RequestDAO, UserDAO, ClientDAO
+from dal.dao import RequestDAO, ClientDAO, DepartmentDAO, ExpenseTypeDAO
 from schemas.requests import Requests
 from utils.utils import PermissionChecker
-
-
 
 accounting_router = APIRouter()
 
@@ -29,6 +25,7 @@ async def get_purchase_requests(
         payment_type_id: Optional[UUID] = None,
         payment_sum: Optional[float] = None,
         sap_code: Optional[str] = None,
+        purchase_approved: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
         status: Optional[str] = "1,2,3,5,6",
@@ -37,11 +34,19 @@ async def get_purchase_requests(
 ):
     filters = {k: v for k, v in locals().items() if v is not None and k not in ["db", "current_user"]}
 
-    filters["purchase_approved"] = True
+    if department_id is None:
+        departments = await DepartmentDAO.get_by_attributes(session=db, filters={"purchasable": True})
+        filters["department_id"] = departments
+
+    if expense_type_id is None:
+        expense_types = await ExpenseTypeDAO.get_by_attributes(session=db, filters={"purchasable": True})
+        filters["expense_type_id"] = expense_types
 
     if client is not None:
-        query = await ClientDAO.get_all(session=db, filters={"fullname": client})
-        clients = db.execute(query).scalars().all()
+        # query = await ClientDAO.get_all(session=db, filters={"fullname": client})
+        # clients = db.execute(query).scalars().all()
+        # filters["client_id"] = [client.id for client in clients]
+        clients = await ClientDAO.get_by_attributes(session=db, filters={"fullname": client})
         filters["client_id"] = [client.id for client in clients]
 
     query = await RequestDAO.get_all(
