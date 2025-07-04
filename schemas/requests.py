@@ -69,6 +69,7 @@ class CreateRequest(TunedModel):
     payment_card: Optional[str] = None
     sap_code: str
     contract: Optional[bool] = None
+    purchase_approved: Optional[bool] = None
     file_paths: List[str] = None
 
 
