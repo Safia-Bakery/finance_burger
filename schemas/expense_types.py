@@ -9,12 +9,12 @@ class ExpenseTypes(TunedModel):
     id: UUID
     name: str
     is_active: Optional[bool]
+    purchasable: Optional[bool] = None
     created_at: Optional[datetime]
 
 
 class ExpenseType(ExpenseTypes):
     description: Optional[str] = None
-    purchasable: Optional[bool] = None
     updated_at: Optional[datetime] = None
 
 

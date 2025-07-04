@@ -15,12 +15,12 @@ class Departments(TunedModel):
     over_budget: Optional[bool] = None
     head: Optional[Clients] = None
     total_budget: Optional[float] = None
+    purchasable: Optional[bool] = None
     created_at: Optional[datetime]
 
 
 class Department(Departments):
     monthly_budget: Optional[List[dict]] = None
-    purchasable: Optional[bool] = None
     updated_at: Optional[datetime] = None
 
 
