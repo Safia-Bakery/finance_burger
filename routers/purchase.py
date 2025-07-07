@@ -28,7 +28,7 @@ async def get_purchase_requests(
         purchase_approved: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
-        status: Optional[str] = "1,2,3,5,6",
+        status: Optional[str] = "0,1,2,3,5,6",
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["purchase requests"]}))
 ):
@@ -53,6 +53,9 @@ async def get_purchase_requests(
         session=db,
         filters=filters if filters else None
     )
+    if query is None:
+        return paginate([])
+
     result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
 

@@ -1,4 +1,5 @@
 from datetime import timedelta, date
+from typing import Optional
 
 from sqlalchemy import func, and_, text, or_, case, select, literal_column, cast, Date
 from sqlalchemy.orm import Session
@@ -90,23 +91,44 @@ class DepartmentDAO(BaseDAO):
 
 
     @classmethod
-    async def get_department_expense(cls, session: Session, department_id, start_date, finish_date):
-        result = session.query(
-            func.sum(Transactions.value)
-        ).join(
-            Requests
-        ).filter(
-            and_(
-                Requests.department_id == department_id,
-                Transactions.request_id.isnot(None),
-                Transactions.status != 4,
-                Requests.status != 4,
-                Requests.approved == True,
-                func.date(Requests.payment_time).between(start_date, finish_date)
-            )
-        ).group_by(
+    async def get_department_expense(cls, session: Session, department_id, start_date, finish_date, payment_date: Optional[date] = None):
+        result = [0]
+        if start_date is not None and finish_date is not None:
+            result = session.query(
+                func.sum(Transactions.value)
+            ).join(
+                Requests
+            ).filter(
+                and_(
+                    Requests.department_id == department_id,
+                    Transactions.request_id.isnot(None),
+                    Transactions.status != 4,
+                    Requests.status != 4,
+                    Requests.approved == True,
+                    func.date(Requests.payment_time).between(start_date, finish_date)
+                )
+            ).first()
 
-        ).first()
+        if payment_date is not None:
+            current_year = float(payment_date.year)
+            current_month = float(payment_date.month)
+
+            result = session.query(
+                func.sum(Transactions.value)
+            ).join(
+                Requests, Transactions.request_id == Requests.id
+            ).filter(
+                and_(
+                    Requests.department_id == department_id,
+                    Transactions.request_id.isnot(None),
+                    Transactions.status != 4,
+                    Requests.status != 4,
+                    Requests.approved == True,
+                    func.date_part('year', Requests.payment_time) == current_year,
+                    func.date_part('month', Requests.payment_time) == current_month
+                )
+            ).first()
+
         return result
 
 
@@ -564,7 +586,8 @@ class TransactionDAO(BaseDAO):
         )
         if start_date is not None and finish_date is not None:
             result = result.filter(
-                func.date(Transactions.created_at).between(start_date, finish_date)
+                # func.date(Transactions.created_at).between(start_date, finish_date)
+                func.date(Requests.payment_time).between(start_date, finish_date)
             )
 
         result = result.order_by(
@@ -588,7 +611,8 @@ class TransactionDAO(BaseDAO):
         )
         if start_date is not None and finish_date is not None:
             total_transactions = total_transactions.filter(
-                func.date(Transactions.created_at).between(start_date, finish_date)
+                # func.date(Transactions.created_at).between(start_date, finish_date)
+                func.date(Requests.payment_time).between(start_date, finish_date)
             )
         total_transactions = total_transactions.count()
         return total_transactions

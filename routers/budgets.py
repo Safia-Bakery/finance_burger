@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from core.session import get_db
@@ -21,10 +21,23 @@ async def create_budget(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Бюджеты": ["create"]}))
 ):
-    created_obj = await BudgetDAO.add(session=db, **body.model_dump())
+    existed_obj = await BudgetDAO.get_by_attributes(
+        session=db,
+        filters={
+            "department_id": body.department_id,
+            "expense_type_id": body.expense_type_id,
+            "start_date": body.start_date,
+            "finish_date": body.finish_date
+        },
+        first=True
+    )
+    if existed_obj:
+        raise HTTPException(status_code=400, detail="Данный бюджет уже создан !")
+
+    obj = await BudgetDAO.add(session=db, **body.model_dump())
     db.commit()
-    db.refresh(created_obj)
-    return created_obj
+    db.refresh(obj)
+    return obj
 
 
 

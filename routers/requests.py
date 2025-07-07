@@ -146,7 +146,8 @@ async def get_request_list(
     )
 
     if start_date is not None and finish_date is not None:
-        query = query.filter(func.date(RequestDAO.model.created_at).between(start_date, finish_date))
+        # query = query.filter(func.date(RequestDAO.model.created_at).between(start_date, finish_date))
+        query = query.filter(func.date(RequestDAO.model.payment_time).between(start_date, finish_date))
 
     result = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
     return paginate(result)
@@ -194,9 +195,9 @@ async def get_request(
             await DepartmentDAO.get_department_total_budget(
                 session=db,
                 department_id=department_id,
-                start_date=start_date,
-                finish_date=finish_date,
-                payment_date=None
+                start_date=None,
+                finish_date=None,
+                payment_date=payment_date
             )
         )[0]
         department_budget = department_budget if department_budget is not None else 0
@@ -204,8 +205,9 @@ async def get_request(
             await DepartmentDAO.get_department_expense(
                 session=db,
                 department_id=department_id,
-                start_date=start_date,
-                finish_date=finish_date
+                start_date=None,
+                finish_date=None,
+                payment_date=payment_date
             )
         )[0]
         department_expense = -department_expense if department_expense is not None else 0
