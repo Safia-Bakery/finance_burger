@@ -230,6 +230,11 @@ async def update_request(
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
     request_payment_time = request.payment_time
 
+    if body.payment_time is not None and body.status is None:
+        if request_payment_time is not None and (request.status == 2 or request.status == 3):
+            body_dict["status"] = 1
+
+
     if body.status == 4:
         if "reject" not in current_user["permissions"]["Заявки"]:
             body_dict.pop("status", None)
