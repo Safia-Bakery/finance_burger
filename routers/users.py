@@ -41,7 +41,8 @@ async def login_client(
         "fullname": user.fullname,
         "username": user.username,
         "password": user.password,
-        "permissions": permissions
+        "permissions": permissions,
+        "client": user.clients if user.clients else None
     }
     expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     data = {
