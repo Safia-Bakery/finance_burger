@@ -101,7 +101,7 @@ async def update_client(
     db.flush()
 
     if updated_client.user_id is not None:
-        await UserDAO.update(session=db, data={"phone": updated_client.phone})
+        await UserDAO.update(session=db, data={"id": body.user_id, "phone": updated_client.phone})
 
     db.commit()
     db.refresh(updated_client)
