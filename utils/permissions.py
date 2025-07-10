@@ -87,7 +87,8 @@ permission_groups = {
         "transfer": "показать заявки для переводов",
         "statistics": "показать статистику",
         "change_payment_type": "изменить тип оплаты",
-        "purchase requests": "показать заявки для закупа"
+        "purchase requests": "показать заявки для закупа",
+        "approve purchase": "одобрить заявку для закупа"
     },
     "Контракты": {
         "create": "создать договор",

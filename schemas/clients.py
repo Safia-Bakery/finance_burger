@@ -35,6 +35,7 @@ class Client(Clients):
 
 class UpdateClient(TunedModel):
     id: UUID
+    user_id: Optional[UUID] = None
     fullname: Optional[str] = None
     phone: Optional[str] = None
     language: Optional[str] = None

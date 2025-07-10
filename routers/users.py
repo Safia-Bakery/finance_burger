@@ -11,10 +11,49 @@ from sqlalchemy.orm import Session
 from core.config import settings
 from core.session import get_db
 from dal.dao import UserDAO
-from schemas.users import CreateUser, GetUser, GetUsers, UpdateUser
+from schemas.users import CreateUser, GetUser, GetUsers, UpdateUser, LoginByPhone
 from utils.utils import Hasher, create_access_token, PermissionChecker, get_me
 
 users_router = APIRouter()
+
+
+
+@users_router.post('/login-client')
+async def login_client(
+        form_data: LoginByPhone = Depends(),
+        session: Session= Depends(get_db)
+):
+    user = await UserDAO.get_by_attributes(session=session, filters={"phone": form_data.phone}, first=True)
+    if not user or not Hasher.verify_password(form_data.password, user.password):
+        raise HTTPException(status_code=404, detail="Invalid phone or password")
+
+    permissions = {}
+    if user.role.accesses:
+        for access in user.role.accesses:
+            # permissions.append(access.permission.name)
+            try:
+                permissions[access.permission.group.name].append(access.permission.name)
+            except KeyError:
+                permissions[access.permission.group.name] = [access.permission.name]
+
+    user_info = {
+        "id": str(user.id),
+        "fullname": user.fullname,
+        "username": user.username,
+        "password": user.password,
+        "permissions": permissions
+    }
+    expire = datetime.now() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    data = {
+        "sub": user.username,
+        "exp": expire,
+        "user": user_info
+    }
+
+    return {
+        "access_token": create_access_token(data=data),
+        "token_type": "Bearer"
+    }
 
 
 

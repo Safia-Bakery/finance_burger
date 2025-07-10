@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from core.session import get_db
-from dal.dao import ClientDAO, DepartmentDAO
+from dal.dao import ClientDAO, DepartmentDAO, UserDAO
 from schemas.clients import Clients, Client, UpdateClient, CreateClient
 from utils.utils import PermissionChecker
 
@@ -96,9 +96,15 @@ async def update_client(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Клиенты": ["update"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
-    updated_obj = await ClientDAO.update(session=db, data=body_dict)
+    updated_client = await ClientDAO.update(session=db, data=body_dict)
+
+    db.flush()
+
+    if updated_client.user_id is not None:
+        await UserDAO.update(session=db, data={"phone": updated_client.phone})
+
     db.commit()
-    db.refresh(updated_obj)
-    return updated_obj
+    db.refresh(updated_client)
+    return updated_client
 
 

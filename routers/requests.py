@@ -160,7 +160,7 @@ async def get_request(
         start_date: Optional[date] = None,
         finish_date: Optional[date] = None,
         db: Session = Depends(get_db),
-        current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting", "transfer", "purchase requests"]}))
+            current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read", "accounting", "transfer", "purchase requests"]}))
 ):
     obj = await RequestDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
     if obj.exchange_rate is not None:
@@ -246,6 +246,11 @@ async def update_request(
             body_dict.pop("approved", None)
             body_dict.pop("approve_comment", None)
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку !")
+
+    if body.purchase_approved is True:
+        if "approve purchase" not in current_user["permissions"]["Заявки"]:
+            body_dict.pop("purchase_approved", None)
+            raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку для закупа !")
 
     if body.payment_type_id is not None:
         if request.payment_type_id != body.payment_type_id:
@@ -355,70 +360,71 @@ async def update_request(
         db.commit()
         db.refresh(updated_request)
 
-        message_text = ""
-        chat_id = updated_request.client.tg_id
-        inline_keyboard = None
+    message_text = ""
+    chat_id = updated_request.client.tg_id
+    inline_keyboard = None
 
-        request_sum = format(int(request.sum), ',').replace(',', ' ')
-        if request.exchange_rate is not None:
-            requested_currency = '{:,.2f}'.format((request.sum / request.exchange_rate), ',').replace(',', ' ')
-        else:
-            requested_currency = request_sum
+    request_sum = format(int(request.sum), ',').replace(',', ' ')
+    if request.exchange_rate is not None:
+        requested_currency = '{:,.2f}'.format((request.sum / request.exchange_rate), ',').replace(',', ' ')
+    else:
+        requested_currency = request_sum
 
-        request_text = (
-            f"📌 Заявка #{request.number}s\n\n"
-            f"📅 Дата заявки: {request.created_at.strftime('%d.%m.%Y')}\n"
-            f"📍 Отдел: {request.department.name}\n"
-            f"👤 Заявитель: {request.client.fullname}\n"
-            f"📞 Номер заявителя: {request.client.phone}\n"
-            f"🛒 Заказчик: {request.buyer}\n"
-            f"💰 Тип затраты: {request.expense_type.name}\n"
-            f"🏢 Поставщик: {request.supplier}\n\n"
-            f"💲 Стоимость: {request_sum}\n"
-            f"💲 Запрошенная сумма в валюте: {requested_currency}\n"
-            f"💵 Валюта: {request.currency if request.currency else ''}\n"
-            f"📈 Курс валюты: {request.exchange_rate if request.exchange_rate else ''}\n"
-            f"💳 Тип оплаты: {request.payment_type.name}\n"
-            f"💳 Карта перевода: {request.payment_card if request.payment_card is not None else ''}\n"
-            f"📜 № Заявки в SAP: {request.sap_code}\n"
-            f"🕓 Дата оплаты: {request.payment_time}\n"
-            f"💸 Фирма-плательщик: {request.payer_company.name if request.payer_company is not None else ''}\n\n"
-            f"📝 Комментарии: {request.description}\n\n"
-            + (f"📃 Документы оплаты 👇\n" if request.invoice else "")
-        )
-        status = updated_request.status
-        number = updated_request.number
-        if status == 1: # Принят
-            message_text = (f"Ваша заявка #{number}s принята со стороны  финансового отдела.\n"
-                            f"Срок оплаты {updated_request.payment_time.strftime('%d.%m.%Y')}")
+    request_text = (
+        f"📌 Заявка #{request.number}s\n\n"
+        f"📅 Дата заявки: {request.created_at.strftime('%d.%m.%Y')}\n"
+        f"📍 Отдел: {request.department.name}\n"
+        f"👤 Заявитель: {request.client.fullname}\n"
+        f"📞 Номер заявителя: {request.client.phone}\n"
+        f"🛒 Заказчик: {request.buyer}\n"
+        f"💰 Тип затраты: {request.expense_type.name}\n"
+        f"🏢 Поставщик: {request.supplier}\n\n"
+        f"💲 Стоимость: {request_sum}\n"
+        f"💲 Запрошенная сумма в валюте: {requested_currency}\n"
+        f"💵 Валюта: {request.currency if request.currency else ''}\n"
+        f"📈 Курс валюты: {request.exchange_rate if request.exchange_rate else ''}\n"
+        f"💳 Тип оплаты: {request.payment_type.name}\n"
+        f"💳 Карта перевода: {request.payment_card if request.payment_card is not None else ''}\n"
+        f"📜 № Заявки в SAP: {request.sap_code}\n"
+        f"🕓 Дата оплаты: {request.payment_time}\n"
+        f"💸 Фирма-плательщик: {request.payer_company.name if request.payer_company is not None else ''}\n\n"
+        f"📝 Комментарии: {request.description}\n\n"
+        + (f"📃 Документы оплаты 👇\n" if request.invoice else "")
+    )
+
+    status = updated_request.status
+    number = updated_request.number
+    if status == 1: # Принят
+        message_text = (f"Ваша заявка #{number}s принята со стороны  финансового отдела.\n"
+                        f"Срок оплаты {updated_request.payment_time.strftime('%d.%m.%Y')}")
+        try:
+            send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
+        except Exception as e:
+            error_sender(error_message=f"FINANCE BACKEND: \n{e}")
+
+        if request.payment_type_id == UUID("822e49f7-f54e-481e-997d-e4cb81b061e1"): # cash
+            chat_id = settings.CHAT_GROUP  # chat id of group
             try:
-                send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
+                send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
             except Exception as e:
                 error_sender(error_message=f"FINANCE BACKEND: \n{e}")
 
-            if request.payment_type_id == UUID("822e49f7-f54e-481e-997d-e4cb81b061e1"): # cash
-                chat_id = settings.CHAT_GROUP  # chat id of group
-                try:
-                    send_telegram_message(chat_id=chat_id, message_text=request_text, keyboard=inline_keyboard)
-                except Exception as e:
-                    error_sender(error_message=f"FINANCE BACKEND: \n{e}")
+    elif status == 4: # Отменен
+        message_text = (f"Ваша заявка #{number}s отменена по причине:\n"
+                        f"{updated_request.comment}")
+        send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
 
-        elif status == 4: # Отменен
-            message_text = (f"Ваша заявка #{number}s отменена по причине:\n"
-                            f"{updated_request.comment}")
-            send_telegram_message(chat_id=chat_id, message_text=message_text, keyboard=inline_keyboard)
-
-        elif status == 5: # Обработан
-            try:
-                send_telegram_message(chat_id=chat_id, message_text=f"Оплачено✅\n\n{request_text}", keyboard=inline_keyboard)
-                if updated_request.invoice is not None:
-                    files = updated_request.invoice.file
-                    for file in files:
-                        file_paths = file.file_paths
-                        for file_path in file_paths:
-                            send_telegram_document(chat_id=updated_request.client.tg_id, file_path=file_path)
-            except Exception as e:
-                print("Sending Error: ", e)
+    elif status == 5: # Обработан
+        try:
+            send_telegram_message(chat_id=chat_id, message_text=f"Оплачено✅\n\n{request_text}", keyboard=inline_keyboard)
+            if updated_request.invoice is not None:
+                files = updated_request.invoice.file
+                for file in files:
+                    file_paths = file.file_paths
+                    for file_path in file_paths:
+                        send_telegram_document(chat_id=updated_request.client.tg_id, file_path=file_path)
+        except Exception as e:
+            print("Sending Error: ", e)
 
     if body.payment_time is not None and request_payment_time is not None:
         message_text = (f"Срок оплаты по вашей заявке {updated_request.number} изменен с "

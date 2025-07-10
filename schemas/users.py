@@ -50,3 +50,7 @@ class UpdateUser(TunedModel):
     is_active: Optional[bool] = None
     role_id: Optional[UUID] = None
 
+
+class LoginByPhone(TunedModel):
+    phone: str
+    password: str

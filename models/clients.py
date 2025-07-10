@@ -16,6 +16,8 @@ class Clients(Base):
     phone = Column(String)
     is_active = Column(Boolean, default=True)
     web_user = Column(Boolean, default=False)
+    user_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    user = relationship('Users', back_populates='clients')
     requests = relationship('Requests', back_populates='client', passive_deletes=True) # lazy='select'
     department = relationship('Departments', back_populates='head', passive_deletes=True)  # uselist=False, lazy='select'
     logs = relationship('Logs', back_populates='client', passive_deletes=True)
