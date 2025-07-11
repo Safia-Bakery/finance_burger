@@ -140,11 +140,8 @@ async def get_request_list(
         role_departments = [relation.department_id for relation in role_department_relations]
         filters["department_id"] = role_departments
 
-    # if current_user.get("client", None):
-    #     clients =
-    #     filters["client_id"] = [client.id for client in clients]
-
-    print('CURRENT USER CLIENT: ', current_user.get("clients", None), type(current_user.get("clients", None)))
+    if current_user.get("client", None):
+        filters["client_id"] = current_user.get("client")
 
     query = await RequestDAO.get_all(
         session=db,
