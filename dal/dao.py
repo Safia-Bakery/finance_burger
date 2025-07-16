@@ -97,15 +97,25 @@ class DepartmentDAO(BaseDAO):
             result = session.query(
                 func.sum(Transactions.value)
             ).join(
-                Requests
+                Requests, Transactions.request_id == Requests.id
+            ).join(
+                ExpenseTypes, Requests.expense_type_id == ExpenseTypes.id
             ).filter(
                 and_(
-                    Requests.department_id == department_id,
-                    Transactions.request_id.isnot(None),
-                    Transactions.status != 4,
-                    Requests.status != 4,
-                    Requests.approved == True,
-                    func.date(Requests.payment_time).between(start_date, finish_date)
+                    and_(
+                        Requests.department_id == department_id,
+                        Transactions.request_id.isnot(None),
+                        Transactions.status != 4,
+                        Requests.status != 4,
+                        func.date(Requests.payment_time).between(start_date, finish_date)
+                    ),
+                    or_(
+                        Requests.approved == True,
+                        and_(
+                            Requests.approved == False,
+                            ExpenseTypes.purchasable == True,
+                        )
+                    )
                 )
             ).first()
 
@@ -117,15 +127,25 @@ class DepartmentDAO(BaseDAO):
                 func.sum(Transactions.value)
             ).join(
                 Requests, Transactions.request_id == Requests.id
+            ).join(
+                ExpenseTypes, Requests.expense_type_id == ExpenseTypes.id
             ).filter(
                 and_(
-                    Requests.department_id == department_id,
-                    Transactions.request_id.isnot(None),
-                    Transactions.status != 4,
-                    Requests.status != 4,
-                    Requests.approved == True,
-                    func.date_part('year', Requests.payment_time) == current_year,
-                    func.date_part('month', Requests.payment_time) == current_month
+                    and_(
+                        Requests.department_id == department_id,
+                        Transactions.request_id.isnot(None),
+                        Transactions.status != 4,
+                        Requests.status != 4,
+                        func.date_part('year', Requests.payment_time) == current_year,
+                        func.date_part('month', Requests.payment_time) == current_month
+                    ),
+                    or_(
+                        Requests.approved == True,
+                        and_(
+                            Requests.approved == False,
+                            ExpenseTypes.purchasable == True,
+                        )
+                    )
                 )
             ).first()
 
@@ -171,8 +191,6 @@ class DepartmentDAO(BaseDAO):
                     INNER JOIN requests r ON t.request_id = r.id
                     WHERE t.request_id IS NOT NULL 
                     AND r.department_id = :department_id 
-                    AND t.status = 0
-                    AND r.status = 0 
                     AND r.approved IS False 
                     AND EXTRACT(YEAR FROM r.created_at::DATE) = EXTRACT(YEAR FROM budget_months.month_series)
                     AND EXTRACT(MONTH FROM r.created_at::DATE) = EXTRACT(MONTH FROM budget_months.month_series)
@@ -199,11 +217,19 @@ class DepartmentDAO(BaseDAO):
                         t.value AS value
                     FROM transactions t
                     INNER JOIN requests r ON t.request_id = r.id
-                    WHERE t.request_id IS NOT NULL 
-                    AND r.department_id = :department_id 
-                    AND t.status <> 4 
-                    AND r.approved IS True
-                    AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
+                    INNER JOIN expense_types e ON r.expense_type_id = e.id
+                    WHERE 
+                        t.request_id IS NOT NULL 
+                        AND r.department_id = :department_id 
+                        AND t.status <> 4 
+                        AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
+                        AND (
+                                r.approved IS TRUE 
+                                OR (
+                                    r.approved IS FALSE 
+                                    AND e.purchasable IS TRUE
+                                )
+                        )
                     
                     UNION ALL
                     
@@ -373,17 +399,48 @@ class BudgetDAO(BaseDAO):
                 func.sum(Transactions.value)
             ).join(
                 Requests, Transactions.request_id == Requests.id
+            ).join(
+                ExpenseTypes, Requests.expense_type_id == ExpenseTypes.id
             ).filter(
                 and_(
-                    Requests.department_id == department_id,
-                    Requests.expense_type_id == expense_type_id,
-                    Transactions.status != 4,
-                    Requests.status != 4,
-                    Requests.approved == True,
-                    # func.date(Requests.payment_time).between(start_date, finish_date)
-                    func.date_part('year', Requests.payment_time) == current_year,
-                    func.date_part('month', Requests.payment_time) == current_month
+                    and_(
+                        Requests.department_id == department_id,
+                        Requests.expense_type_id == expense_type_id,
+                        Transactions.status != 4,
+                        Requests.status != 4,
+                        func.date_part('year', Requests.payment_time) == current_year,
+                        func.date_part('month', Requests.payment_time) == current_month
+                    ),
+                    or_(
+                        Requests.approved == True,
+                        and_(
+                            Requests.approved == False,
+                            ExpenseTypes.purchasable == True,
+                        )
+                    )
                 )
+                # or_(
+                #     and_(
+                #         Requests.department_id == department_id,
+                #         Requests.expense_type_id == expense_type_id,
+                #         Transactions.status != 4,
+                #         Requests.status != 4,
+                #         Requests.approved == True,
+                #         # func.date(Requests.payment_time).between(start_date, finish_date)
+                #         func.date_part('year', Requests.payment_time) == current_year,
+                #         func.date_part('month', Requests.payment_time) == current_month
+                #     ),
+                #     and_(
+                #         Requests.department_id == department_id,
+                #         Requests.expense_type_id == expense_type_id,
+                #         Transactions.status != 4,
+                #         Requests.status != 4,
+                #         Requests.approved == False,
+                #         ExpenseTypes.purchasable == True,
+                #         func.date_part('year', Requests.payment_time) == current_year,
+                #         func.date_part('month', Requests.payment_time) == current_month
+                #     )
+                # )
             ).first()
 
         else:
@@ -391,14 +448,24 @@ class BudgetDAO(BaseDAO):
                 func.sum(Transactions.value)
             ).join(
                 Requests, Transactions.request_id == Requests.id
+            ).join(
+                ExpenseTypes, Requests.expense_type_id == ExpenseTypes.id
             ).filter(
                 and_(
-                    Requests.department_id == department_id,
-                    Requests.expense_type_id == expense_type_id,
-                    Transactions.status != 4,
-                    Requests.status != 4,
-                    Requests.approved == True,
-                    func.date(Requests.payment_time).between(start_date, finish_date)
+                    and_(
+                        Requests.department_id == department_id,
+                        Requests.expense_type_id == expense_type_id,
+                        Transactions.status != 4,
+                        Requests.status != 4,
+                        func.date(Requests.payment_time).between(start_date, finish_date)
+                    ),
+                    or_(
+                        Requests.approved == True,
+                        and_(
+                            Requests.approved == False,
+                            ExpenseTypes.purchasable == True,
+                        )
+                    )
                 )
             ).first()
 
