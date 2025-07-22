@@ -228,8 +228,19 @@ def error_sender(error_message):
         return None
 
 
-status_data = {0: "Новый", 1: "Принят", 2: "Ожидает оплаты", 3: "Просрочен", 4: "Отклонен", 5: "Обработан"}
-approved_data = {True: "Да", False: "Нет"}
+status_data = {
+    0: "Новый",
+    1: "Принят",
+    2: "Ожидает оплаты",
+    3: "Просрочен",
+    4: "Отклонен",
+    5: "Обработан",
+    6: "Отложен"
+}
+approved_data = {
+    True: "Да",
+    False: "Нет"
+}
 
 def excel_generator(data):
     columns = {
