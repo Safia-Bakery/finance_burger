@@ -233,6 +233,9 @@ async def update_request(
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
     request_payment_time = request.payment_time
 
+    if request.status == 5:
+        raise HTTPException(status_code=404, detail="Данная завка уже закрыта !")
+
     if body.payment_time is not None and body.status is None:
         if request_payment_time is not None and (request.status == 2 or request.status == 3):
             body_dict["status"] = 1
@@ -243,10 +246,6 @@ async def update_request(
             body_dict.pop("status", None)
             body_dict.pop("comment", None)
             raise HTTPException(status_code=404, detail="У вас нет прав отменить статус заявки !")
-        if request.status == 5:
-            body_dict.pop("status", None)
-            body_dict.pop("comment", None)
-            raise HTTPException(status_code=404, detail="Данная завка уже закрыта !")
 
     if body.approved is True:
         if "approve" not in current_user["permissions"]["Заявки"]:
