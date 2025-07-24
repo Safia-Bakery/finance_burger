@@ -243,6 +243,10 @@ async def update_request(
             body_dict.pop("status", None)
             body_dict.pop("comment", None)
             raise HTTPException(status_code=404, detail="У вас нет прав отменить статус заявки !")
+        if request.status == 5:
+            body_dict.pop("status", None)
+            body_dict.pop("comment", None)
+            raise HTTPException(status_code=404, detail="Данная завка уже закрыта !")
 
     if body.approved is True:
         if "approve" not in current_user["permissions"]["Заявки"]:
