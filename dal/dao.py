@@ -1,7 +1,8 @@
+from collections import defaultdict
 from datetime import timedelta, date
 from typing import Optional
 
-from sqlalchemy import func, and_, text, or_, case, select, literal_column, cast, Date
+from sqlalchemy import func, and_, text, or_, case, select, literal_column, cast, Date, distinct, extract
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -333,6 +334,201 @@ class RequestDAO(BaseDAO):
             "total_sum": float(query.total_sum or 0)
         }
 
+    @classmethod
+    async def paid_in_time(cls, session: Session, filters: dict = None):
+        base_query = await cls.get_all(session, filters)
+
+        subq = (
+            base_query
+            .join(Logs, cls.model.id == Logs.request_id)
+            .filter(Logs.status == 5)
+            .with_only_columns(
+                cls.model.id.label("id"),
+                func.date(cls.model.payment_time).label("payment_date"),
+                func.date(Logs.created_at).label("paid_at")
+            ).group_by(
+                cls.model.id,
+                func.date(cls.model.payment_time),
+                func.date(Logs.created_at)
+            )
+            .subquery()
+        )
+
+        query = select(
+            func.sum(
+                case((subq.c.paid_at >= subq.c.payment_date, 1), else_=0)
+            ).label("paid_requests_in_time"),
+            (
+                (
+                    func.sum(case((subq.c.paid_at >= subq.c.payment_date, 1), else_=0)) /
+                    func.count(subq.c.id)
+                ) * 100
+            ).label("paid_requests_in_time_percent")
+        ).select_from(
+            subq
+        )
+
+        query = session.execute(query).first()
+
+        return {
+            "paid_requests_in_time": query.paid_requests_in_time or 0,
+            "paid_requests_in_time_percent": float(query.paid_requests_in_time_percent or 0)
+        }
+
+
+    @classmethod
+    async def department_monthly_expenses(cls, session: Session, filters: dict = None):
+        base_query = select(
+            cls.model
+        ).filter(
+            and_(
+                cls.model.approved == filters["approved"],
+                cls.model.status == filters["status"]
+                # func.date(Logs.created_at).between(filters["start_date"], filters["finish_date"])
+            )
+        ).join(
+            Departments, cls.model.department_id == Departments.id
+        ).join(
+                Logs,
+                and_(
+                    cls.model.id == Logs.request_id,
+                    cls.model.status == Logs.status
+                )
+            )
+
+        # Subquery selecting required columns including department_name
+        subq = (
+            base_query
+            .with_only_columns(
+                Departments.name.label("department_name"),
+                cls.model.id.label("request_id"),
+                cls.model.sum.label("request_sum"),
+                cls.model.status.label("request_status"),
+                Logs.status.label("log_status"),
+                func.date(Logs.created_at).label("log_date")
+            )
+            .group_by(
+                Departments.name,
+                cls.model.id,
+                cls.model.sum,
+                cls.model.status,
+                Logs.status,
+                func.date(Logs.created_at)
+            )
+            .subquery()
+        )
+
+        department_monthly_expenses = select(
+            subq.c.department_name.label("department"),
+            extract('year', subq.c.log_date).label('year'),
+            extract('month', subq.c.log_date).label('month'),
+            func.sum(distinct(subq.c.request_sum)).label("expense")
+        ).select_from(
+            subq
+        ).group_by(
+            subq.c.department_name,
+            extract('year', subq.c.log_date),
+            extract('month', subq.c.log_date)
+        ).order_by(
+            subq.c.department_name,
+            extract('year', subq.c.log_date).asc(),
+            extract('month', subq.c.log_date).asc()
+        )
+        department_monthly_expenses = session.execute(department_monthly_expenses).all()
+
+        monthly_expenses = select(
+            extract('year', subq.c.log_date).label('year'),
+            extract('month', subq.c.log_date).label('month'),
+            func.sum(distinct(subq.c.request_sum)).label("expense")
+        ).select_from(
+            subq
+        ).group_by(
+            extract('year', subq.c.log_date),
+            extract('month', subq.c.log_date)
+        ).order_by(
+            extract('year', subq.c.log_date).asc(),
+            extract('month', subq.c.log_date).asc()
+        )
+        monthly_expenses = session.execute(monthly_expenses).all()
+
+
+        return department_monthly_expenses, monthly_expenses
+
+    @classmethod
+    async def metrics_by_currency(cls, session: Session, filters: dict = None):
+        # Get base filtered query from get_all()
+        base_query = await cls.get_all(session, filters)
+
+        subq = (
+            base_query
+            .with_only_columns(
+                cls.model.currency.label("currency"),
+                cls.model.id.label("id"),
+                cls.model.sum.label("sum"),
+                cls.model.exchange_rate.label("exchange_rate")
+            )
+            .subquery()
+        )
+
+        query = select(
+            subq.c.currency.label("currency"),
+            func.count(subq.c.id).label("total_requests"),
+            case(
+                (
+                    subq.c.currency != "Сум", (func.sum(subq.c.sum / subq.c.exchange_rate))
+                ),
+                else_=func.sum(subq.c.sum)
+            ).label("total_sum")
+        ).select_from(
+            subq
+        ).group_by(
+            subq.c.currency
+        ).order_by(
+            subq.c.currency
+        )
+
+        query = session.execute(query).all()
+
+        return [
+            {
+                "currency": row.currency,
+                "total_requests": row.total_requests or 0,
+                "total_sum": float(row.total_sum or 0)
+            } for row in query
+        ]
+
+
+    @classmethod
+    async def department_received_paid_requests(cls, session: Session, filters: dict = None):
+        base_query = await cls.get_all(session, filters)
+        # Apply additional joins to the base query
+        join_query = base_query.join(Departments, cls.model.department_id == Departments.id)
+        # Subquery selecting required columns including department_name
+        subq = join_query.with_only_columns(
+            Departments.name.label("department_name"),
+            cls.model.id,
+            cls.model.sum,
+            cls.model.status
+        ).subquery()
+
+        # Replace the SELECT part with aggregates
+        department_requests = select(
+            subq.c.department_name,
+            func.count(subq.c.id).label("total_requests"),
+            func.sum(subq.c.sum).label("total_sum"),
+            func.sum(
+                case((subq.c.status == 5, 1), else_=0)
+            ).label("paid_requests"),  # Number of requests with status = 5
+            (
+                    (func.sum(case((subq.c.status == 5, 1), else_=0)) / func.count(subq.c.id)) * 100
+            ).label("paid_requests_percent")
+        ).select_from(
+            subq
+        ).group_by(
+            subq.c.department_name
+        )
+        department_requests = session.execute(department_requests).all()
+        return department_requests
 
     @classmethod
     async def get_excel(cls, session: Session, filters):
@@ -358,52 +554,73 @@ class RequestDAO(BaseDAO):
             metrics = {}
             # unpaid_filters = {k: v for k, v in (filters or {}).items() if k in ["approved", "status"]}
             unpaid_filters = {"approved": True, "status": [0, 1, 2, 3]}
+            unpaid_filters.update(filters)
             unpaid_requests = await cls.sum_count_query(session, unpaid_filters)
             metrics["unpaid_requests"] = unpaid_requests
 
             paid_filters = {"approved": True, "status": [5]}
+            paid_filters.update(filters)
             paid_requests = await cls.sum_count_query(session, paid_filters)
+            paid_requests_in_time = await cls.paid_in_time(session, filters)
             metrics["paid_requests"] = paid_requests
+            metrics["paid_requests"].update(paid_requests_in_time)
 
-            department_filters = {k: v for k, v in (filters or {}).items() if k in ["start_date", "finish_date"]}
-            base_query = await cls.get_all(session, department_filters)
-            # Apply additional joins to the base query
-            join_query = base_query.join(Departments, cls.model.department_id == Departments.id)
-            # Subquery selecting required columns including department_name
-            subq = join_query.with_only_columns(
-                Departments.name.label("department_name"),
-                cls.model.id,
-                cls.model.sum,
-                cls.model.status
-            ).subquery()
+            department_expenses_filters = {"approved": True, "status": 5}
+            department_expenses, monthly_expenses = await cls.department_monthly_expenses(session, department_expenses_filters)
+            # print("department_expenses: \n", department_expenses)
+            # print("monthly_expenses: \n", monthly_expenses)
 
-            # Replace the SELECT part with aggregates
-            department_requests = select(
-                subq.c.department_name,
-                func.count(subq.c.id).label("total_requests"),
-                func.sum(subq.c.sum).label("total_sum"),
-                func.sum(
-                    case((subq.c.status == 5, 1), else_=0)
-                ).label("paid_requests"),  # Number of requests with status = 5
-                (
-                    (func.sum(case((subq.c.status == 5, 1), else_=0)) / func.count(subq.c.id)) * 100
-                ).label("paid_requests_percent")
-            ).select_from(
-                subq
-            ).group_by(
-                subq.c.department_name
+            monthly_expenses_result_dict = defaultdict(lambda: defaultdict())
+            for year, month, expense in monthly_expenses:
+                monthly_expenses_result_dict[str(year)][str(month)] = float(expense)
+
+            metrics["monthly_expenses"] = monthly_expenses_result_dict
+
+            department_expenses_result_dict = defaultdict(
+                lambda: defaultdict(
+                    lambda: {}
+                )
             )
-            department_requests = session.execute(department_requests).all()
-            metrics["department_metrics"] = [
-                {
-                    "department_name": row.department_name,
+
+            for department, year, month, expense in department_expenses:
+                department_expenses_result_dict[str(department)][str(year)][str(month)] = float(expense)
+
+            # Convert defaultdict to a list of dictionaries
+            department_expenses_result = {
+                department: {
+                    year: dict(months)
+                    for year, months in years.items()
+                }
+                for department, years in department_expenses_result_dict.items()
+            }
+
+            department_filters = filters
+            department_metrics = await cls.department_received_paid_requests(session, department_filters)
+
+            departments_metrics_result = {
+                row.department_name: {
                     "total_requests": row.total_requests,
                     "total_sum": float(row.total_sum or 0),
                     "paid_requests": row.paid_requests,
-                    "paid_requests_percent": float(row.paid_requests_percent or 0)
+                    "paid_requests_percent": float(row.paid_requests_percent or 0),
+                    "monthly_expenses": department_expenses_result.get(row.department_name, {})
                 }
-                for row in department_requests
-            ]
+                for row in department_metrics
+            }
+            metrics["department_metrics"] = departments_metrics_result
+
+
+            not_approved_filters = {"approved": False, "status": [0, 1, 2, 3]}
+            not_approved_filters.update(filters)
+            not_approved_requests = await cls.sum_count_query(session, not_approved_filters)
+
+            metrics["not_approved_requests"] = not_approved_requests
+
+            metrics["currency_metrics"] = await cls.metrics_by_currency(session, paid_filters)
+
+            all_budget_sum = await TransactionDAO().get_all_budgets_sum(session, filters)
+            metrics["all_budget"] = all_budget_sum[0]
+
 
             return metrics
 
@@ -718,6 +935,19 @@ class BudgetDAO(BaseDAO):
 
 class TransactionDAO(BaseDAO):
     model = Transactions
+
+    @classmethod
+    async def get_all_budgets_sum(cls, session: Session, filters: dict = None):
+        result = session.query(
+            func.sum(cls.model.value)
+        ).filter(
+            and_(
+                func.date(cls.model.created_at).between(filters["start_date"], filters["finish_date"]),
+                cls.model.status == 5
+            )
+        ).first()
+        return result
+
 
     @classmethod
     async def get_department_transactions(cls, session: Session, department_id, start_date, finish_date, page, size):
