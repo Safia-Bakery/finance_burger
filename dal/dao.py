@@ -490,36 +490,46 @@ class RequestDAO(BaseDAO):
 
     @classmethod
     async def department_received_paid_requests(cls, session: Session, filters: dict = None):
-        base_query = await cls.get_all(session, filters)
-        # Apply additional joins to the base query
-        join_query = base_query.outerjoin(Departments, cls.model.department_id == Departments.id)
-        # Subquery selecting required columns including department_name
-        subq = join_query.with_only_columns(
-            Departments.name.label("department_name"),
-            cls.model.id,
-            cls.model.sum,
-            cls.model.status
-        ).subquery()
+        base_query = await cls.get_all(session, filters)  # filtered `Requests` query
 
-        # Replace the SELECT part with aggregates
+        # Convert base_query to subquery so we can safely reuse it
+        requests_subq = base_query.subquery()
+
+        # Outer join from Departments to filtered Requests
+        join_query = select(
+            Departments.name.label("department_name"),
+            requests_subq.c.id,
+            requests_subq.c.sum,
+            requests_subq.c.status
+        ).select_from(
+            Departments.outerjoin(requests_subq, requests_subq.c.department_id == Departments.id)
+        )
+
+        # Subquery to aggregate
+        subq = join_query.subquery()
+
+        # Aggregation
         department_requests = select(
             subq.c.department_name,
             func.count(subq.c.id).label("total_requests"),
-            func.sum(subq.c.sum).label("total_sum"),
+            func.coalesce(func.sum(subq.c.sum), 0).label("total_sum"),
             func.sum(
                 case((subq.c.status == 5, 1), else_=0)
-            ).label("paid_requests"),  # Number of requests with status = 5
+            ).label("paid_requests"),
             func.sum(
                 case((subq.c.status == 5, subq.c.sum), else_=0)
             ).label("paid_requests_sum"),
-            (
-                    (func.sum(case((subq.c.status == 5, 1), else_=0)) / func.count(subq.c.id)) * 100
+            case(
+                (func.count(subq.c.id) > 0,
+                 (func.sum(case((subq.c.status == 5, 1), else_=0)) / func.count(subq.c.id)) * 100),
+                else_=0
             ).label("paid_requests_percent")
-        ).select_from(
-            subq
         ).group_by(
             subq.c.department_name
+        ).order_by(
+            subq.c.department_name
         )
+
         department_requests = session.execute(department_requests).all()
         return department_requests
 
