@@ -492,7 +492,7 @@ class RequestDAO(BaseDAO):
     async def department_received_paid_requests(cls, session: Session, filters: dict = None):
         base_query = await cls.get_all(session, filters)
         # Apply additional joins to the base query
-        join_query = base_query.join(Departments, cls.model.department_id == Departments.id)
+        join_query = base_query.outerjoin(Departments, cls.model.department_id == Departments.id)
         # Subquery selecting required columns including department_name
         subq = join_query.with_only_columns(
             Departments.name.label("department_name"),
