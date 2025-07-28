@@ -609,7 +609,22 @@ class RequestDAO(BaseDAO):
             # print("department_expenses: \n", department_expenses)
             # print("monthly_expenses: \n", monthly_expenses)
 
-            monthly_expenses_result_dict = defaultdict(lambda: defaultdict())
+            monthly_expenses_result_dict = defaultdict(
+                lambda: {
+                    "1": 0.0,
+                    "2": 0.0,
+                    "3": 0.0,
+                    "4": 0.0,
+                    "5": 0.0,
+                    "6": 0.0,
+                    "7": 0.0,
+                    "8": 0.0,
+                    "9": 0.0,
+                    "10": 0.0,
+                    "11": 0.0,
+                    "12": 0.0
+                }
+            )
             for year, month, expense in monthly_expenses:
                 monthly_expenses_result_dict[str(year)][str(month)] = float(expense)
 
