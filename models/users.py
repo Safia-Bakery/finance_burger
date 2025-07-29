@@ -24,6 +24,7 @@ class Users(Base):
     role = relationship('Roles', back_populates='users')
     clients = relationship('Clients', back_populates='user', passive_deletes=True)
     logs = relationship('Logs', back_populates='user', passive_deletes=True)
+    requests = relationship('Requests', back_populates='user', passive_deletes=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

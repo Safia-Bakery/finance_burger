@@ -55,10 +55,11 @@ class CreateRequest(TunedModel):
     expense_type_id: UUID
     buyer: str
     supplier: str
-    client_id: UUID
+    client_id: Optional[UUID] = None
+    user_id: Optional[UUID] = None
     description: Optional[str] = None
     status: Optional[int] = 0
-    sum: float
+    sum: Optional[float] = None
     currency: Optional[str] = None
     exchange_rate: Optional[float] = None
     to_accounting: Optional[bool] = False
@@ -67,7 +68,7 @@ class CreateRequest(TunedModel):
     payer_company_id: Optional[UUID] = None
     cash: Optional[float] = None
     payment_card: Optional[str] = None
-    sap_code: str
+    sap_code: Optional[str] = None
     contract: Optional[bool] = None
     purchase_approved: Optional[bool] = None
     file_paths: List[str] = None
@@ -76,6 +77,7 @@ class CreateRequest(TunedModel):
 
 class UpdateRequest(TunedModel):
     id: UUID
+    sum: Optional[float] = None
     approved: Optional[bool] = None
     purchase_approved: Optional[bool] = None
     to_accounting: Optional[bool] = None
@@ -100,6 +102,7 @@ class TransactionRequest(TunedModel):
     sum: float = None
     currency: Optional[str] = None
     exchange_rate: Optional[float] = None
+    logs: Optional[List[Log]] = None
 
 
 

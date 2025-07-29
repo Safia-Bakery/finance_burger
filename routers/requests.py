@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 from typing import Optional, List
 from uuid import UUID
 
+import requests
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_pagination import Page, paginate
 from sqlalchemy import func
@@ -31,6 +32,10 @@ async def create_request(
     body_dict = body.model_dump(exclude_unset=True)
     body_dict.pop("file_paths", None)
     body_dict.pop("contract", None)
+
+    if body.client_id is None:
+        body_dict["user_id"] = current_user.get("id")
+
     created_request = await RequestDAO.add(session=db, **body_dict)
 
     if body.file_paths is not None and body.contract is not None:
@@ -292,7 +297,36 @@ async def update_request(
                 body_dict.pop("status", None)
                 raise HTTPException(status_code=404, detail="Сначала загрузите квитанцию оплаты !")
 
+    if body.sum is not None:
+        currency = request.currency
+        if currency != "Сум":
+            currency_response = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/")
+            if currency_response.status_code == 200:
+                ccy = ""
+                if currency == "Доллар":
+                    ccy = "USD"
+                elif currency == "Евро":
+                    ccy = "EUR"
+                elif currency == "Тенге":
+                    ccy = "KZT"
+                elif currency == "Фунт":
+                    ccy = "GBP"
+                elif currency == "Рубль":
+                    ccy = "RUB"
+                cbu_currencies = currency_response.json()
+                currency_dict = next((item for item in cbu_currencies if item["Ccy"] == ccy), None)
+                exchange_rate = float(currency_dict["Rate"])
 
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Что-то пошло не так, выберите заново валюту!"
+                )
+
+            sum = float(body.sum) * exchange_rate
+            body_dict["sum"] = sum
+        else:
+            body_dict["sum"] = body.sum
 
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
@@ -302,6 +336,12 @@ async def update_request(
             "id": transaction.id,
             "status": updated_request.status
         }
+        if body_dict.get("sum"):
+            data["value"] = body_dict.get("sum")
+
+        if body_dict.get("purchase_approved"):
+            data["purchase_approved"] = body_dict.get("purchase_approved")
+
         await TransactionDAO.update(session=db, data=data)
 
     db.commit()

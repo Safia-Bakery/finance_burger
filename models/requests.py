@@ -33,6 +33,8 @@ class Requests(Base):
     invoice = relationship('Invoices', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'
     client_id = Column(UUID, ForeignKey("clients.id", ondelete="SET NULL"), nullable=True)
     client = relationship('Clients', back_populates='requests') # lazy="selectin"
+    user_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    user = relationship('Users', back_populates='requests')  # lazy="selectin"
     department_id = Column(UUID, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     department = relationship('Departments', back_populates='requests') # lazy="selectin"
     expense_type_id = Column(UUID, ForeignKey("expense_types.id", ondelete="SET NULL"), nullable=True)

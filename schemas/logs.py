@@ -10,6 +10,7 @@ from schemas.clients import Clients
 class Log(TunedModel):
     id: UUID
     status: Optional[int]
+    sum: Optional[float] = None
     approved: Optional[bool]
     user: Optional[GetUsers]
     client: Optional[Clients]
