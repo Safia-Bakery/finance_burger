@@ -36,6 +36,9 @@ async def create_request(
     if body.client_id is None:
         body_dict["user_id"] = current_user.get("id")
 
+    if not body_dict.get("status"):
+        body_dict["status"] = 0
+
     created_request = await RequestDAO.add(session=db, **body_dict)
 
     if body.file_paths is not None and body.contract is not None:

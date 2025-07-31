@@ -45,8 +45,11 @@ class Requests(Base):
     # buyer = relationship('Buyers', back_populates='requests') # lazy="selectin"
     buyer = Column(String, nullable=True)
     supplier = Column(String, nullable=True)
+    trip_days = Column(Integer, nullable=True)
     # supplier_id = Column(UUID, ForeignKey("suppliers.id", ondelete="SET NULL"), nullable=True)
     # supplier = relationship('Suppliers', back_populates='requests') # lazy="selectin"
+    city_id = Column(UUID, ForeignKey("cities.id", ondelete="SET NULL"), nullable=True)
+    city = relationship('Cities', back_populates='requests')
     logs = relationship('Logs', back_populates='request', cascade="all, delete") # lazy="selectin"
     transaction = relationship('Transactions', back_populates='request')
     created_at = Column(DateTime(timezone=True), default=func.now())

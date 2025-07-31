@@ -7,29 +7,7 @@ from fastapi_pagination import add_pagination
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
-from routers.life_span import combined_lifespan
-from routers.roles import roles_router
-from routers.users import users_router
-from routers.permissions import permissions_router
-from routers.departments import departments_router
-from routers.expense_types import expense_types_router
-from routers.payment_types import payment_types_router
-from routers.clients import clients_router
-from routers.buyers import buyers_router
-from routers.suppliers import suppliers_router
-from routers.requests import requests_router
-from routers.files import files_router
-from routers.contracts import contracts_router
-from routers.logs import logs_router
-from routers.statistics import statistics_router
-from routers.accounting import accounting_router
-from routers.settings import settings_router
-from routers.budgets import budgets_router
-from routers.transactions import transactions_router
-from routers.transfers import transfers_router
-from routers.payer_companies import payer_companies_router
-from routers.limits import limits_router
-from routers.purchase import purchase_router
+from routers import *
 from utils.utils import get_current_user_for_docs
 
 
@@ -61,6 +39,8 @@ main_router.include_router(permissions_router, tags=['Permissions'])
 main_router.include_router(roles_router, tags=['Roles'])
 main_router.include_router(users_router, tags=['Users'])
 main_router.include_router(clients_router, tags=['Clients'])
+main_router.include_router(countries_router, tags=['Countries'])
+main_router.include_router(cities_router, tags=['Cities'])
 main_router.include_router(departments_router, tags=['Departments'])
 main_router.include_router(payer_companies_router, tags=['Payer Companies'])
 main_router.include_router(budgets_router, tags=['Budgets'])

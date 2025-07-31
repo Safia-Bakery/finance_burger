@@ -10,8 +10,10 @@ from dal.base import BaseDAO
 from models.accesses import Accesses
 from models.budgets import Budgets
 from models.buyers import Buyers
+from models.cities import Cities
 from models.clients import Clients
 from models.contracts import Contracts
+from models.countries import Countries
 from models.departments import Departments
 from models.expense_types import ExpenseTypes
 from models.files import Files
@@ -705,6 +707,14 @@ class LimitDAO(BaseDAO):
     model = Limits
 
 
+class CountryDAO(BaseDAO):
+    model = Countries
+
+
+class CityDAO(BaseDAO):
+    model = Cities
+
+
 class BudgetDAO(BaseDAO):
     model = Budgets
 
@@ -1072,13 +1082,22 @@ class TransactionDAO(BaseDAO):
         ).join(
             PaymentTypes, Requests.payment_type_id == PaymentTypes.id
         ).join(
+            ExpenseTypes, Requests.expense_type_id == ExpenseTypes.id
+        ).join(
             Limits,
             func.date(Requests.payment_time).between(Limits.start_date, Limits.finish_date),
             isouter=True
         ).filter(
             and_(
                 func.date(Requests.payment_time).between(start_date, finish_date),
-                Transactions.status.in_([1, 2, 3, 5, 6])
+                Transactions.status.in_([1, 2, 3, 5, 6]),
+                or_(
+                    Requests.approved == True,
+                    and_(
+                        Requests.approved == False,
+                        ExpenseTypes.purchasable == True
+                    )
+                )
             )
         ).group_by(
             func.date(Requests.payment_time),

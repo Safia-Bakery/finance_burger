@@ -4,6 +4,8 @@ from .roles import Roles
 from .accesses import Accesses
 from .users import Users
 from .clients import Clients
+from .countries import Countries
+from .cities import Cities
 from .departments import Departments
 from .payer_companies import PayerCompanies
 
