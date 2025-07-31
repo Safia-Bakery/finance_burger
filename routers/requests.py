@@ -237,6 +237,7 @@ async def update_request(
     body_dict = body.model_dump(exclude_unset=True)
     body_dict.pop("file_paths", None)
     body_dict.pop("invoice", None)
+    body_dict.pop("contract", None)
     body_dict.pop("client_id", None)
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
     request_payment_time = request.payment_time
@@ -349,6 +350,19 @@ async def update_request(
 
     db.commit()
     db.refresh(updated_request)
+
+    if body.file_paths is not None and body.contract is not None:
+        contract = await ContractDAO.add(session=db, **{"request_id": updated_request.id})
+        await FileDAO.add(
+            session=db,
+            **{
+                "file_paths": body.file_paths,
+                "contract_id": contract.id if contract is not None else None
+            }
+        )
+
+        db.commit()
+        db.refresh(updated_request)
 
     if body.file_paths is not None and body.invoice is not None:
         invoice = None

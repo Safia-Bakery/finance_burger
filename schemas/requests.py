@@ -77,6 +77,7 @@ class CreateRequest(TunedModel):
 
 class UpdateRequest(TunedModel):
     id: UUID
+    currency: Optional[str] = None
     sum: Optional[float] = None
     approved: Optional[bool] = None
     purchase_approved: Optional[bool] = None
@@ -92,6 +93,14 @@ class UpdateRequest(TunedModel):
     invoice: Optional[bool] = None
     file_paths: List[str] = None
     client_id: Optional[UUID] = None
+    contract: Optional[bool] = None
+    payment_card: Optional[str] = None
+    buyer: Optional[str] = None
+    supplier: Optional[str] = None
+    description: Optional[str] = None
+    sap_code: Optional[str] = None
+    department_id: Optional[UUID] = None
+    expense_type_id: Optional[UUID] = None
 
 
 
