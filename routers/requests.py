@@ -397,7 +397,7 @@ async def update_request(
         db.commit()
         db.refresh(updated_request)
 
-        chat_id = updated_request.client.tg_id
+        chat_id = updated_request.client.tg_id if updated_request.client else None
         number = updated_request.number
         message_text = f"Ваша заявка #{number}s одобрена !"
         try:
@@ -437,8 +437,8 @@ async def update_request(
         f"📌 Заявка #{request.number}s\n\n"
         f"📅 Дата заявки: {request.created_at.strftime('%d.%m.%Y')}\n"
         f"📍 Отдел: {request.department.name}\n"
-        f"👤 Заявитель: {request.client.fullname}\n"
-        f"📞 Номер заявителя: {request.client.phone}\n"
+        f"👤 Заявитель: {request.client.fullname if request.client else request.user.fullname}\n"
+        f"📞 Номер заявителя: {request.client.phone if request.client else request.user.phone}\n"
         f"🛒 Заказчик: {request.buyer}\n"
         f"💰 Тип затраты: {request.expense_type.name}\n"
         f"🏢 Поставщик: {request.supplier}\n\n"
