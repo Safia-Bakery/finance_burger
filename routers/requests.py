@@ -332,6 +332,19 @@ async def update_request(
         else:
             body_dict["sum"] = body.sum
 
+        insert_data = {
+            "sum": body.sum,
+            "request_id": body.id,
+            "user_id": current_user["id"]
+        }
+
+        # create logs
+        await LogDAO.add(
+            session=db,
+            **insert_data
+        )
+        db.commit()
+
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
     transaction = await TransactionDAO.get_by_attributes(session=db, filters={"request_id": updated_request.id}, first=True)
