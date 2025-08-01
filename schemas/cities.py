@@ -15,6 +15,7 @@ class Cities(TunedModel):
 
 
 class City(Cities):
+    country_id: Optional[UUID] = None
     limit: float = 0.0
     updated_at: Optional[datetime] = None
 
