@@ -424,7 +424,7 @@ async def update_request(
         db.refresh(updated_request)
 
     message_text = ""
-    chat_id = updated_request.client.tg_id
+    chat_id = updated_request.client.tg_id if updated_request.client is not None else None
     inline_keyboard = None
 
     request_sum = format(int(request.sum), ',').replace(',', ' ')
@@ -485,7 +485,7 @@ async def update_request(
                 for file in files:
                     file_paths = file.file_paths
                     for file_path in file_paths:
-                        send_telegram_document(chat_id=updated_request.client.tg_id, file_path=file_path)
+                        send_telegram_document(chat_id=chat_id, file_path=file_path)
         except Exception as e:
             print("Sending Error: ", e)
 
@@ -495,7 +495,7 @@ async def update_request(
                         f"{updated_request.payment_time.strftime('%d.%m.%Y')} по причине:\n"
                         f"“{updated_request.comment}”")
         try:
-            send_telegram_message(chat_id=updated_request.client.tg_id, message_text=message_text)
+            send_telegram_message(chat_id=chat_id, message_text=message_text)
         except Exception as e:
             print("Sending Error: ", e)
 

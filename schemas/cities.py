@@ -10,12 +10,12 @@ class Cities(TunedModel):
     id: UUID
     name: str
     is_active: Optional[bool] = None
+    description: Optional[str] = None
     created_at: Optional[datetime]
 
 
 class City(Cities):
     limit: float = 0.0
-    description: Optional[str] = None
     updated_at: Optional[datetime] = None
 
 

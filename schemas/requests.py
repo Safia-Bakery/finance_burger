@@ -4,6 +4,7 @@ from uuid import UUID
 
 from schemas.base_model import TunedModel
 from schemas.clients import Clients
+from schemas.users import GetUser
 from schemas.contracts import Contract
 from schemas.departments import Departments
 from schemas.expense_types import ExpenseTypes
@@ -17,6 +18,7 @@ class Requests(TunedModel):
     id: UUID
     number: int
     client: Optional[Clients] = None
+    user: Optional[GetUser] = None
     department: Optional[Departments] = None
     expense_type: Optional[ExpenseTypes] = None
     payment_type: Optional[PaymentTypes] = None
@@ -55,6 +57,8 @@ class CreateRequest(TunedModel):
     expense_type_id: UUID
     buyer: str
     supplier: str
+    city_id: Optional[UUID] = None
+    trip_days: Optional[int] = None
     client_id: Optional[UUID] = None
     user_id: Optional[UUID] = None
     description: Optional[str] = None

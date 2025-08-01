@@ -23,7 +23,9 @@ async def create_city(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Города": ["create"]}))
 ):
-    created_city = await CityDAO.add(session=db, **body.model_dump(exclude_unset=True))
+    body_dict = body.model_dump(exclude_unset=True)
+    body_dict.pop("limit")
+    created_city = await CityDAO.add(session=db, **body_dict)
     if created_city is not None:
         await LimitDAO.add(
             session=db,
