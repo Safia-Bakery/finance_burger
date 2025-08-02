@@ -102,7 +102,8 @@ permission_groups = {
         "change_payment_type": "изменить тип оплаты",
         "purchase requests": "показать заявки для закупа",
         "approve purchase": "одобрить заявку для закупа",
-        "edit_purchase_request": "изменить заявку закупа"
+        "edit_purchase_request": "изменить заявку закупа",
+        "credit": "включить заявку в долг"
     },
     "Контракты": {
         "create": "создать договор",

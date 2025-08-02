@@ -11,6 +11,7 @@ class Logs(Base):
     __tablename__ = 'logs'
     id = Column(UUID, primary_key=True, default=uuid.uuid4)
     status = Column(Integer, nullable=True)
+    currency = Column(String)
     sum = Column(DECIMAL, nullable=True)
     approved = Column(Boolean)
     purchase_approved = Column(Boolean)

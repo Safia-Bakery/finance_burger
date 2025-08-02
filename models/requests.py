@@ -14,6 +14,7 @@ class Requests(Base):
     sum = Column(DECIMAL, nullable=False)
     sap_code = Column(String)
     approved = Column(Boolean, default=False)
+    credit = Column(Boolean, default=False)
     purchase_approved = Column(Boolean, nullable=True)
     to_accounting = Column(Boolean, default=False)
     to_transfer = Column(Boolean, default=False)

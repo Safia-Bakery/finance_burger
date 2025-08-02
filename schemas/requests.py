@@ -84,6 +84,7 @@ class UpdateRequest(TunedModel):
     currency: Optional[str] = None
     sum: Optional[float] = None
     approved: Optional[bool] = None
+    credit: Optional[bool] = None
     purchase_approved: Optional[bool] = None
     to_accounting: Optional[bool] = None
     to_transfer: Optional[bool] = None

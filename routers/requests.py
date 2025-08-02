@@ -55,6 +55,7 @@ async def create_request(
         session=db,
         **{
             "sum": created_request.sum,
+            "currency": created_request.currency,
             "status": 0,
             "request_id": created_request.id,
             "user_id": current_user["id"]
@@ -268,6 +269,11 @@ async def update_request(
             body_dict.pop("purchase_approved", None)
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку для закупа !")
 
+    if body.credit is True:
+        if "credit" not in current_user["permissions"]["Заявки"]:
+            body_dict.pop("credit", None)
+            raise HTTPException(status_code=404, detail="У вас нет прав включить заявку в долг !")
+
     if body.payment_type_id is not None:
         if request.payment_type_id != body.payment_type_id:
             if "change_payment_type" not in current_user["permissions"]["Заявки"]:
@@ -335,6 +341,7 @@ async def update_request(
 
         insert_data = {
             "sum": body.sum,
+            "currency": body.currency,
             "request_id": body.id,
             "user_id": current_user["id"]
         }
