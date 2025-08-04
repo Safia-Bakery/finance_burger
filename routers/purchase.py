@@ -28,11 +28,14 @@ async def get_purchase_requests(
         purchase_approved: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
-        status: Optional[str] = "0,1,2,3,5,6",
+        status: Optional[str] = "0,1,2,3,4,5,6",
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["purchase requests"]}))
 ):
     filters = {k: v for k, v in locals().items() if v is not None and k not in ["db", "current_user"]}
+    if "approve purchase" not in current_user["permissions"]["Заявки"]:
+        filters["status"] = "0,1,2,3,4,5,6,7"
+        filters["user_id"] = current_user["id"]
 
     if department_id is None:
         departments = await DepartmentDAO.get_by_attributes(session=db, filters={"purchasable": True})
