@@ -35,7 +35,7 @@ async def get_purchase_requests(
     filters = {k: v for k, v in locals().items() if v is not None and k not in ["db", "current_user"]}
     if "approve purchase" not in current_user["permissions"]["Заявки"]:
         filters["status"] = "0,1,2,3,4,5,6,7"
-        filters["user_id"] = current_user["id"]
+        filters["user_id"] = UUID(current_user["id"])
 
     if department_id is None:
         departments = await DepartmentDAO.get_by_attributes(session=db, filters={"purchasable": True})
