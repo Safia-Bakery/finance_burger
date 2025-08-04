@@ -227,7 +227,7 @@ class DepartmentDAO(BaseDAO):
                         t.request_id IS NOT NULL 
                         AND r.department_id = :department_id 
                         AND t.status <> 4 
-                        AND r.credit IS NOT True,
+                        AND r.credit IS NOT True
                         AND r.payment_time::DATE BETWEEN :start_date AND :finish_date
                         AND (
                                 r.approved IS TRUE 
