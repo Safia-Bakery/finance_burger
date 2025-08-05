@@ -1,5 +1,5 @@
 import re
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from sqlalchemy import select, inspect, update, delete, and_, func
 from sqlalchemy.exc import SQLAlchemyError
@@ -63,7 +63,7 @@ class BaseDAO:
 
 
     @classmethod
-    async def get_all(cls, session: Session, filters: dict = None):
+    async def get_all(cls, session: Session, filters: dict = None, payment_date: Optional[bool] = False):
         try:
             query = select(cls.model)
             if filters is not None:
@@ -74,9 +74,12 @@ class BaseDAO:
 
                     column = getattr(cls.model, k, None)
 
-                    if k == "start_date" or k == "finish_date":
-                        # column = getattr(cls.model, "created_at", None)
-                        column = getattr(cls.model, "payment_time", None)
+                    if payment_date is True:
+                        if k == "start_date" or k == "finish_date":
+                            column = getattr(cls.model, "payment_time", None)
+                    else:
+                        if k == "start_date" or k == "finish_date":
+                            column = getattr(cls.model, "created_at", None)
 
                     if column is not None:
                         if k == "status":

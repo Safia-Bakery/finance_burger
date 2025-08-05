@@ -318,9 +318,9 @@ class RequestDAO(BaseDAO):
     model = Requests
 
     @classmethod
-    async def sum_count_query(cls, session: Session, filters: dict = None):
+    async def sum_count_query(cls, session: Session, filters: dict = None, payment_date: Optional[bool] = False):
         # Get base filtered query from get_all()
-        base_query = await cls.get_all(session, filters)
+        base_query = await cls.get_all(session, filters, payment_date)
 
         subq = base_query.with_only_columns(
             cls.model.id.label("id"),
@@ -604,7 +604,7 @@ class RequestDAO(BaseDAO):
 
             paid_filters = {"approved": True, "status": [5]}
             paid_filters.update(filters)
-            paid_requests = await cls.sum_count_query(session, paid_filters)
+            paid_requests = await cls.sum_count_query(session, paid_filters, True)
             paid_requests_in_time = await cls.paid_in_time(session, filters)
             metrics["paid_requests"] = paid_requests
             metrics["paid_requests"].update(paid_requests_in_time)
