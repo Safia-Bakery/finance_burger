@@ -324,16 +324,29 @@ async def update_request(
             currency_response = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/")
             if currency_response.status_code == 200:
                 ccy = ""
-                if request_currency == "Доллар" or new_currency == "Доллар":
-                    ccy = "USD"
-                elif request_currency == "Евро" or new_currency == "Евро":
-                    ccy = "EUR"
-                elif request_currency == "Тенге" or new_currency == "Тенге":
-                    ccy = "KZT"
-                elif request_currency == "Фунт" or new_currency == "Фунт":
-                    ccy = "GBP"
-                elif request_currency == "Рубль" or new_currency == "Рубль":
-                    ccy = "RUB"
+                if body.sum is not None and body.currency is None:
+                    if request_currency == "Доллар":
+                        ccy = "USD"
+                    elif request_currency == "Евро":
+                        ccy = "EUR"
+                    elif request_currency == "Тенге":
+                        ccy = "KZT"
+                    elif request_currency == "Фунт":
+                        ccy = "GBP"
+                    elif request_currency == "Рубль":
+                        ccy = "RUB"
+
+                else:
+                    if new_currency == "Доллар":
+                        ccy = "USD"
+                    elif new_currency == "Евро":
+                        ccy = "EUR"
+                    elif new_currency == "Тенге":
+                        ccy = "KZT"
+                    elif new_currency == "Фунт":
+                        ccy = "GBP"
+                    elif new_currency == "Рубль":
+                        ccy = "RUB"
 
                 cbu_currencies = currency_response.json()
                 currency_dict = next((item for item in cbu_currencies if item["Ccy"] == ccy), None)
