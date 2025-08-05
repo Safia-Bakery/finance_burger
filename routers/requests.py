@@ -317,22 +317,24 @@ async def update_request(
                 body_dict.pop("status", None)
                 raise HTTPException(status_code=404, detail="Сначала загрузите квитанцию оплаты !")
 
-    if body.sum is not None:
-        currency = request.currency
-        if currency != "Сум":
+    if body.sum is not None or body.currency is not None:
+        request_currency = request.currency
+        new_currency = body.currency
+        if request_currency != "Сум" or new_currency != "Сум":
             currency_response = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/")
             if currency_response.status_code == 200:
                 ccy = ""
-                if currency == "Доллар":
+                if request_currency == "Доллар" or new_currency == "Доллар":
                     ccy = "USD"
-                elif currency == "Евро":
+                elif request_currency == "Евро" or new_currency == "Евро":
                     ccy = "EUR"
-                elif currency == "Тенге":
+                elif request_currency == "Тенге" or new_currency == "Тенге":
                     ccy = "KZT"
-                elif currency == "Фунт":
+                elif request_currency == "Фунт" or new_currency == "Фунт":
                     ccy = "GBP"
-                elif currency == "Рубль":
+                elif request_currency == "Рубль" or new_currency == "Рубль":
                     ccy = "RUB"
+
                 cbu_currencies = currency_response.json()
                 currency_dict = next((item for item in cbu_currencies if item["Ccy"] == ccy), None)
                 exchange_rate = float(currency_dict["Rate"])
@@ -345,6 +347,7 @@ async def update_request(
 
             sum = float(body.sum) * exchange_rate
             body_dict["sum"] = sum
+            body_dict["exchange_rate"] = exchange_rate
         else:
             body_dict["sum"] = body.sum
 
