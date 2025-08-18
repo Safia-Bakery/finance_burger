@@ -239,7 +239,8 @@ status_data = {
 }
 approved_data = {
     True: "Да",
-    False: "Нет"
+    False: "Нет",
+    None: "Не задано"
 }
 
 def excel_generator(data):
