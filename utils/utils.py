@@ -249,6 +249,7 @@ def excel_generator(data):
         "Дата запроса": [],
         "Отдел": [],
         "Одобрено": [],
+        "Кредит": [],
         "Комментария": [],
         "Тип расхода": [],
         "Заказчик": [],
@@ -268,6 +269,7 @@ def excel_generator(data):
         columns["Дата запроса"].append(row.created_at.strftime("%d-%m-%Y"))
         columns["Отдел"].append(row.department.name)
         columns["Одобрено"].append(approved_data[row.approved])
+        columns["Кредит"].append(approved_data[row.credit])
         columns["Комментария"].append(row.description)
         columns["Тип расхода"].append(row.expense_type.name)
         columns["Заказчик"].append(row.client.fullname)

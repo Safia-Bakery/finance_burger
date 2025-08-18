@@ -133,6 +133,7 @@ class GenerateExcel(TunedModel):
     payment_sum: Optional[float] = None
     sap_code: Optional[str] = None
     approved: Optional[bool] = None
+    credit: Optional[bool] = None
     created_at: Optional[date] = None
     payment_date: Optional[date] = None
     status: Optional[str] = None
