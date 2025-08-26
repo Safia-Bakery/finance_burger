@@ -54,3 +54,8 @@ class UpdateUser(TunedModel):
 class LoginByPhone(TunedModel):
     phone: str
     password: str
+
+
+class BasicLogin(TunedModel):
+    username: str
+    password: str
