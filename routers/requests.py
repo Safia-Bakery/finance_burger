@@ -251,7 +251,7 @@ async def update_request(
     body_dict.pop("contract", None)
     body_dict.pop("client_id", None)
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
-    request_payment_time = request.payment_time
+    request_payment_time = request.payment_time.date()
 
     if request.status == 5:
         raise HTTPException(status_code=404, detail="Данная завка уже закрыта !")
@@ -277,25 +277,26 @@ async def update_request(
             request_payment_time = body.payment_time
 
         if request_payment_time is not None:
-            budget = (await BudgetDAO.get_filtered_budget_sum(
-                session=db,
-                department_id=request.department_id,
-                expense_type_id=request.expense_type_id,
-                start_date=request_payment_time.date(),
-                finish_date=request_payment_time.date()
-            ))[0]
-            budget = budget if budget is not None else 0
-            expense = (await BudgetDAO.get_filtered_budget_expense(
-                session=db,
-                department_id=request.department_id,
-                expense_type_id=request.expense_type_id,
-                start_date=request_payment_time.date(),
-                finish_date=request_payment_time.date()
-            ))[0]
-            expense = -expense if expense is not None else 0
-            balance = budget - expense
-            if request.sum > balance:
-                raise HTTPException(status_code=400, detail="Недостаточно средств в бюджете !")
+            if not request.credit:
+                budget = (await BudgetDAO.get_filtered_budget_sum(
+                    session=db,
+                    department_id=request.department_id,
+                    expense_type_id=request.expense_type_id,
+                    start_date=request_payment_time,
+                    finish_date=request_payment_time
+                ))[0]
+                budget = budget if budget is not None else 0
+                expense = (await BudgetDAO.get_filtered_budget_expense(
+                    session=db,
+                    department_id=request.department_id,
+                    expense_type_id=request.expense_type_id,
+                    start_date=request_payment_time,
+                    finish_date=request_payment_time
+                ))[0]
+                expense = -expense if expense is not None else 0
+                balance = budget - expense
+                if request.sum > balance:
+                    raise HTTPException(status_code=400, detail="Недостаточно средств в бюджете !")
 
 
     if body.purchase_approved is True:
