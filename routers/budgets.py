@@ -1,3 +1,4 @@
+import calendar
 from datetime import date, datetime
 from typing import List, Optional
 from uuid import UUID
@@ -97,10 +98,13 @@ async def get_budget_balance(
         "expense_type_id": expense_type_id
     }
     if start_date is not None:
-        filters["start_date"] = start_date
+        filters["start_date"] = start_date.replace(day=1)
     if finish_date is not None:
-        filters["finish_date"] = finish_date
+        filters["finish_date"] = finish_date.replace(day=calendar.monthrange(finish_date.year, finish_date.month)[1])
 
+    print("filters: ", filters)
+    print("start_date: ", start_date, type(start_date))
+    print("finish_date: ", finish_date, type(finish_date))
     current_date = date.today()
     obj = await BudgetDAO.get_by_attributes(session=db, filters=filters, first=True)
     budget = (await BudgetDAO.get_filtered_budget_sum(
