@@ -139,6 +139,7 @@ async def get_request_list(
         query = await ClientDAO.get_all(session=db, filters={"fullname": client})
         clients = db.execute(query).scalars().all()
         filters["client_id"] = [client.id for client in clients]
+        print(filters)
 
     if filters.get("department_id", None) is None:
         user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
@@ -148,6 +149,7 @@ async def get_request_list(
 
     if current_user.get("clients", None):
         filters["client_id"] = current_user.get("clients")
+        print(filters)
 
     # role_expense_types = await RoleExpenseTypeDAO.get_by_attributes(session=db, filters={"role_id": current_user.get("role_id")})
     # if role_expense_types:
