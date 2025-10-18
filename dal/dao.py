@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from dal.base import BaseDAO
+from models.receipts import Receipts
 from models.accesses import Accesses
 from models.budgets import Budgets
 from models.buyers import Buyers
@@ -700,6 +701,10 @@ class ContractDAO(BaseDAO):
 
 class InvoiceDAO(BaseDAO):
     model = Invoices
+
+
+class ReceiptDAO(BaseDAO):
+    model = Receipts
 
 
 class FileDAO(BaseDAO):

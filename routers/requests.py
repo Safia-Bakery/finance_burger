@@ -22,7 +22,7 @@ from dal.dao import (
     ClientDAO,
     BudgetDAO,
     DepartmentDAO,
-    ExpenseTypeDAO
+    ExpenseTypeDAO, ReceiptDAO
 )
 from schemas.requests import Requests, Request, UpdateRequest, CreateRequest, GenerateExcel
 from utils.utils import PermissionChecker, send_telegram_message, send_telegram_document, error_sender, excel_generator
@@ -42,6 +42,7 @@ async def create_request(
 ):
     body_dict = body.model_dump(exclude_unset=True)
     body_dict.pop("file_paths", None)
+    body_dict.pop("receipt_files", None)
     body_dict.pop("contract", None)
 
     if body.client_id is None:
@@ -72,6 +73,17 @@ async def create_request(
                 "contract_id": contract.id if contract is not None else None
             }
         )
+    if body.receipt_files is not None:
+        receipt = await ReceiptDAO.add(session=db, **{"request_id": created_request.id})
+        await FileDAO.add(
+            session=db,
+            **{
+                "file_paths": body.receipt_files,
+                "receipt_id": receipt.id if receipt is not None else None
+            }
+        )
+
+
     # create logs
     await LogDAO.add(
         session=db,
@@ -291,6 +303,10 @@ async def update_request(
             body_dict.pop("purchase_approved", None)
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку для закупа !")
 
+    if body.status is not None and request.checked_by_financier is False:
+        body_dict.pop("status", None)
+        raise HTTPException(status_code=404, detail="Данную заявку должен сперва проверить ответственный финансист !")
+
     if body.checked_by_financier is True:
         if "check" not in current_user["permissions"]["Заявки"]:
             body_dict.pop("checked_by_financier", None)
@@ -395,6 +411,13 @@ async def update_request(
             **insert_data
         )
         db.commit()
+
+    if body.contract_number is not None and body.invoice_sap_code is not None:
+        body_dict.pop("contract_number", None)
+        updating_requests = await RequestDAO.get_by_attributes(session=db, filters={"contract_number": body.contract_number})
+        for request in updating_requests:
+            if request.id != body.id:
+                await RequestDAO.update(session=db, data=body_dict)
 
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 

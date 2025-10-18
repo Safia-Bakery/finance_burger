@@ -35,6 +35,7 @@ class Requests(Base):
     status = Column(Integer)
     contract = relationship('Contracts', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'
     invoice = relationship('Invoices', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'
+    receipt = relationship('Receipts', back_populates='request', uselist=False, passive_deletes=True) # lazy='selectin'
     client_id = Column(UUID, ForeignKey("clients.id", ondelete="SET NULL"), nullable=True)
     client = relationship('Clients', back_populates='requests') # lazy="selectin"
     user_id = Column(UUID, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)

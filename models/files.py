@@ -15,6 +15,8 @@ class Files(Base):
     contract = relationship('Contracts', back_populates='file') # lazy="selectin"
     invoice_id = Column(UUID, ForeignKey("invoices.id", ondelete="SET NULL"), nullable=True)
     invoice = relationship('Invoices', back_populates='file') # lazy="selectin"
+    receipt_id = Column(UUID, ForeignKey("receipts.id", ondelete="SET NULL"), nullable=True)
+    receipt = relationship('Receipts', back_populates='file')  # lazy="selectin"
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

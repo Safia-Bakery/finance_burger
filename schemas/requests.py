@@ -48,6 +48,7 @@ class Request(Requests):
     approve_comment: Optional[str] = None
     contract: Optional[Contract] = None
     invoice: Optional[Invoice] = None
+    receipt: Optional[Invoice] = None
     logs: Optional[List[Log]] = None
     updated_at: Optional[datetime] = None
     expense_type_budget: Optional[float] = 0.0
@@ -82,6 +83,7 @@ class CreateRequest(TunedModel):
     checked_by_financier: Optional[bool] = None
     contract_number: Optional[str] = None
     file_paths: List[str] = None
+    receipt_files: List[str] = None
 
 
 
@@ -112,6 +114,7 @@ class UpdateRequest(TunedModel):
     description: Optional[str] = None
     sap_code: Optional[str] = None
     invoice_sap_code: Optional[str] = None
+    contract_number: Optional[str] = None
     department_id: Optional[UUID] = None
     expense_type_id: Optional[UUID] = None
 

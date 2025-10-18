@@ -16,6 +16,7 @@ from .payment_types import PaymentTypes
 from .requests import Requests
 from .contracts import Contracts
 from .invoices import Invoices
+from .receipts import Receipts
 from .files import Files
 from .logs import Logs
 from .budgets import Budgets

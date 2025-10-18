@@ -24,3 +24,4 @@ from .purchase import purchase_router
 from .countries import countries_router
 from .cities import cities_router
 from .financier_checks import checker_router
+from .request_invoices import invoice_router
