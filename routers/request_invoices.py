@@ -51,21 +51,12 @@ async def get_requests_with_invoices(
 
     if advance_payment is not None:
         if advance_payment is True:
-            query = db.execute(
-                query
-                .filter(RequestDAO.model.receipt.isnot(None))
-            )
+            query = query.filter(RequestDAO.model.receipt.isnot(None))
         else:
-            query = db.execute(
-                query
-                .filter(RequestDAO.model.receipt.is_(None))
-            )
+            query = query.filter(RequestDAO.model.receipt.is_(None))
 
     if contract_number is None:
-        query = db.execute(
-            query
-            .filter(RequestDAO.model.contract_number.isnot(None))
-        )
+        query = query.filter(RequestDAO.model.contract_number.isnot(None))
 
     requests = db.execute(query.order_by(RequestDAO.model.number.desc())).scalars().all()
 
