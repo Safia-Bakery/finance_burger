@@ -11,11 +11,11 @@ from dal.dao import RequestDAO, ClientDAO, DepartmentDAO, ExpenseTypeDAO
 from schemas.requests import Requests
 from utils.utils import PermissionChecker
 
-purchase_router = APIRouter()
+checker_router = APIRouter()
 
 
 
-@purchase_router.get("/financier-checks", response_model=Page[Requests])
+@checker_router.get("/financier-checks", response_model=Page[Requests])
 async def get_unchecked_requests(
         number: Optional[int] = None,
         client: Optional[str] = None,
