@@ -28,6 +28,7 @@ async def get_requests_with_invoices(
         payment_sum: Optional[float] = None,
         sap_code: Optional[str] = None,
         purchase_approved: Optional[bool] = None,
+        advance_payment: Optional[bool] = None,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
         status: Optional[str] = "0,1,2,3,4,5,6",
@@ -47,6 +48,18 @@ async def get_requests_with_invoices(
     )
     if query is None:
         return paginate([])
+
+    if advance_payment is not None:
+        if advance_payment is True:
+            query = db.execute(
+                query
+                .filter(RequestDAO.model.receipt.isnot(None))
+            )
+        else:
+            query = db.execute(
+                query
+                .filter(RequestDAO.model.receipt.is_(None))
+            )
 
     if contract_number is None:
         result = db.execute(
