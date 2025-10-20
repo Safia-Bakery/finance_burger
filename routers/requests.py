@@ -424,11 +424,12 @@ async def update_request(
         db.commit()
 
     if body.contract_number is not None and body.invoice_sap_code is not None:
+        body_dict_copy = body_dict.copy()
         body_dict.pop("contract_number", None)
         updating_requests = await RequestDAO.get_by_attributes(session=db, filters={"contract_number": body.contract_number})
         for request in updating_requests:
             if request.id != body.id:
-                await RequestDAO.update(session=db, data=body_dict)
+                await RequestDAO.update(session=db, data=body_dict_copy)
 
     updated_request = await RequestDAO.update(session=db, data=body_dict)
 
