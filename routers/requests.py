@@ -284,10 +284,10 @@ async def update_request(
             body_dict.pop("approve_comment", None)
             raise HTTPException(status_code=404, detail="У вас нет прав одобрить заявку !")
 
-        if request.contract_number is not None and request.receipt:
-            if request.invoice_sap_code is None:
-                body_dict.pop("approved", None)
-                raise HTTPException(status_code=404, detail="Данная заявка ещё не обработана бухгалтерами !")
+        # if request.contract_number is not None and request.receipt:
+        #     if request.invoice_sap_code is None:
+        #         body_dict.pop("approved", None)
+        #         raise HTTPException(status_code=404, detail="Данная заявка ещё не обработана бухгалтерами !")
 
         if body.status == 6 and body.payment_time is not None:
             request_payment_time = body.payment_time
