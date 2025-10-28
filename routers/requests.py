@@ -262,7 +262,7 @@ async def update_request(
     body_dict.pop("contract", None)
     body_dict.pop("client_id", None)
     request = await RequestDAO.get_by_attributes(session=db, filters={"id": body.id}, first=True)
-    request_payment_time = request.payment_time.date()
+    request_payment_time = request.payment_time.date() if request.payment_time else None
 
     if request.status == 5:
         raise HTTPException(status_code=404, detail="Данная завка уже закрыта !")
