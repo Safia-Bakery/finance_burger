@@ -107,6 +107,9 @@ async def get_budget_balance(
     print("finish_date: ", finish_date, type(finish_date))
     current_date = date.today()
     obj = await BudgetDAO.get_by_attributes(session=db, filters=filters, first=True)
+    if not obj:
+        raise HTTPException(status_code=400, detail="По указанным промежуткам дат баланс бюджета не найден !")
+
     budget = (await BudgetDAO.get_filtered_budget_sum(
         session=db,
         department_id=department_id,
