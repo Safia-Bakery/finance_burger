@@ -35,9 +35,9 @@ async def get_unchecked_requests(
 ):
     filters = {k: v for k, v in locals().items() if v is not None and k not in ["db", "current_user"]}
 
-    if expense_type_id is None:
-        expense_types = await ExpenseTypeDAO.get_by_attributes(session=db, filters={"checkable": True})
-        filters["expense_type_id"] = [expense_type.id for expense_type in expense_types]
+    # if expense_type_id is None:
+    #     expense_types = await ExpenseTypeDAO.get_by_attributes(session=db, filters={"checkable": True})
+    #     filters["expense_type_id"] = [expense_type.id for expense_type in expense_types]
 
     if client is not None:
         clients = await ClientDAO.get_by_attributes(session=db, filters={"fullname": client})
