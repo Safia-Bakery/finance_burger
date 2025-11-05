@@ -81,6 +81,9 @@ class BaseDAO:
                         if k == "start_date" or k == "finish_date":
                             column = getattr(cls.model, "created_at", None)
 
+                    if k == "payment_date":
+                        column = getattr(cls.model, "payment_time", None)
+
                     if column is not None:
                         if k == "status":
                             if isinstance(v, list):
@@ -92,6 +95,8 @@ class BaseDAO:
                                 conditions.append(column.isnot(v))
                             else:
                                 conditions.append(func.date(column) == v)
+                        elif k == "payment_date":
+                            conditions.append(func.date(column) == v)
                         elif k == "created_at":
                             conditions.append(func.date(column) == v)
                         elif k == "start_date":
