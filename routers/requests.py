@@ -126,9 +126,13 @@ async def get_request_list(
         approved: Optional[bool] = None,
         credit: Optional[bool] = None,
         created_at: Optional[date] = None,
+        created_start_date: Optional[date] = None,
+        created_finish_date: Optional[date] = None,
         start_date: Optional[date] = None,
         finish_date: Optional[date] = None,
         payment_date: Optional[date] = None,
+        payment_start_date: Optional[date] = None,
+        payment_finish_date: Optional[date] = None,
         status: Optional[str] = None,
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["read"]}))

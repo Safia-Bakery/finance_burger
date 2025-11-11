@@ -29,6 +29,10 @@ async def get_purchase_requests(
         purchase_approved: bool = False,
         created_at: Optional[date] = None,
         payment_date: Optional[date] = None,
+        created_start_date: Optional[date] = None,
+        created_finish_date: Optional[date] = None,
+        payment_start_date: Optional[date] = None,
+        payment_finish_date: Optional[date] = None,
         status: Optional[str] = "0,1,2,3,4,5,6",
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Заявки": ["purchase requests"]}))

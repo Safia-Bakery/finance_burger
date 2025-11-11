@@ -84,6 +84,20 @@ class BaseDAO:
                     if k == "payment_date":
                         column = getattr(cls.model, "payment_time", None)
 
+                    if k == "created_start_date" or k == "created_finish_date":
+                        column = getattr(cls.model, "created_at", None)
+                        if k == "created_start_date":
+                            k = "start_date"
+                        elif k == "created_finish_date":
+                            k = "finish_date"
+
+                    if k == "payment_start_date" or k == "payment_finish_date":
+                        column = getattr(cls.model, "payment_time", None)
+                        if k == "payment_start_date":
+                            k = "start_date"
+                        elif k == "payment_finish_date":
+                            k = "finish_date"
+
                     if column is not None:
                         if k == "status":
                             if isinstance(v, list):
