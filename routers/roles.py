@@ -77,12 +77,12 @@ async def get_role(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Роли": ["read"]}))
 ):
     role = await RoleDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
-    role.permissions = [access.permission for access in role.accesses]
+    # role.permissions = [access.permission for access in role.accesses]
 
-    role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db, filters={"role_id": role.id})
+    # role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db, filters={"role_id": role.id})
 
-    role.departments = [relation.department for relation in role_department_relations]
-    role.expense_types = [relation.expense_type for relation in role.expense_types]
+    # role.departments = [relation.department for relation in role_department_relations]
+    # role.expense_types = [relation.expense_type for relation in role.expense_types]
 
     return role
 
