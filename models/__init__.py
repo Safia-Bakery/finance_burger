@@ -23,3 +23,4 @@ from .budgets import Budgets
 from .limits import Limits
 from .transactions import Transactions
 from .role_department_relations import RoleDepartments
+from .role_expensetype_relations import RoleExpenseTypes
