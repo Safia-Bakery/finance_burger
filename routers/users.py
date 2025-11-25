@@ -119,6 +119,7 @@ async def login(
 
     user_info = {
         "id": str(user.id),
+        "role_id": str(user.role_id),
         "fullname": user.fullname,
         "username": user.username,
         "password": user.password,
