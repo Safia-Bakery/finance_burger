@@ -170,7 +170,7 @@ async def create_user(
     created_user = await UserDAO.add(session=db, **body_dict)
     db.commit()
     db.refresh(created_user)
-    created_user.role.permissions = [access.permission for access in created_user.role.accesses]
+    # created_user.role.permissions = [access.permission for access in created_user.role.accesses]
     return created_user
 
 
@@ -195,7 +195,7 @@ async def get_user(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Пользователи": ["read"]}))
 ):
     user = await UserDAO.get_by_attributes(session=db, filters={"id": id}, first=True)
-    user.role.permissions = [access.permission for access in user.role.accesses]
+    # user.role.permissions = [access.permission for access in user.role.accesses]
     return user
 
 
