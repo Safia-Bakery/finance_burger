@@ -82,8 +82,7 @@ async def get_role(
     role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db, filters={"role_id": role.id})
 
     role.departments = [relation.department for relation in role_department_relations]
-    # role.expense_types = [relation.expense_type for relation in role.expense_types]
-
+    role.expense_types = [relation.expense_type for relation in role.expense_types]
 
     return role
 

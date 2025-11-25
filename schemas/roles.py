@@ -4,7 +4,7 @@ from uuid import UUID
 
 from .base_model import TunedModel
 from .departments import Departments
-# from .expense_types import ExpenseTypes
+from .expense_types import ExpenseTypes
 from .permissions import GetPermission
 
 
@@ -19,7 +19,7 @@ class GetRole(GetRoles):
     description: Optional[str] = None
     permissions: Optional[List[GetPermission]] = None
     departments: Optional[List[Departments]] = None
-    # expense_types: Optional[List[ExpenseTypes]] = None
+    expense_types: Optional[List[ExpenseTypes]] = None
 
 
 class CreateRole(TunedModel):
@@ -38,5 +38,5 @@ class UpdateRole(TunedModel):
     is_active: Optional[bool] = None
     permissions: Optional[List[UUID]] = None
     departments: Optional[List[UUID]] = None
-    # expense_types: Optional[List[UUID]] = None
+    expense_types: Optional[List[UUID]] = None
 
