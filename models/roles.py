@@ -20,3 +20,15 @@ class Roles(Base):
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    @property
+    def expense_types_list(self):
+        return [rel.expense_type for rel in self.expense_types]
+
+    @property
+    def departments_list(self):
+        return [rel.department for rel in self.roles_departments]
+
+    @property
+    def permissions_list(self):
+        return [rel.permission for rel in self.accesses]
+

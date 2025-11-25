@@ -114,6 +114,7 @@ async def update_role(
 
     updated_role = await RoleDAO.update(session=db, data=body_dict)
 
+    # ────────────────── PERMISSIONS ─────────────────────
     if permissions is not None:
         role_accesses = updated_role.accesses
         role_permissions = [access.permission_id for access in role_accesses]
@@ -129,9 +130,8 @@ async def update_role(
 
         db.commit()
         db.refresh(updated_role)
-        role_accesses = updated_role.accesses
-        updated_role.permissions = [access.permission for access in role_accesses]
 
+    # ────────────────── DEPARTMENTS ─────────────────────
     if departments is not None:
         role_department_relations = updated_role.roles_departments
         role_departments = [relation.department_id for relation in role_department_relations]
@@ -148,6 +148,7 @@ async def update_role(
         db.commit()
         db.refresh(updated_role)
 
+    # ──────────────── EXPENSE TYPES ─────────────────────
     if accepted_expense_types_ids is not None:
         role_expense_types_relations = updated_role.expense_types
         role_expense_types_ids = [relation.expense_type_id for relation in role_expense_types_relations]
@@ -164,11 +165,19 @@ async def update_role(
         db.commit()
         db.refresh(updated_role)
 
-    role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db, filters={"role_id": updated_role.id})
-    updated_role.departments = [relation.department for relation in role_department_relations]
+    # ───────── FIX FOR RESPONSE MODEL ─────────
 
-    role_expense_type_relations = await RoleExpenseTypeDAO.get_by_attributes(session=db, filters={"role_id": updated_role.id})
-    updated_role.expense_types = [relation.expense_type for relation in role_expense_type_relations]
+    updated_role.departments = [
+        rel.department for rel in updated_role.roles_departments
+    ]
+
+    updated_role.expense_types = [
+        rel.expense_type for rel in updated_role.expense_types
+    ]
+
+    updated_role.permissions = [
+        rel.permission for rel in updated_role.accesses
+    ]
 
     return updated_role
 

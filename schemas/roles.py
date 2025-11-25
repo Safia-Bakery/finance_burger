@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
+from pydantic import Field, ConfigDict
+
 from .base_model import TunedModel
 from .departments import Departments
 from .expense_types import ExpenseTypes
@@ -17,10 +19,14 @@ class GetRoles(TunedModel):
 
 class GetRole(GetRoles):
     description: Optional[str] = None
-    permissions: Optional[List[GetPermission]] = None
-    departments: Optional[List[Departments]] = None
-    expense_types: Optional[List[ExpenseTypes]] = None
+    # permissions: Optional[List[GetPermission]] = None
+    # departments: Optional[List[Departments]] = None
+    # expense_types: Optional[List[ExpenseTypes]] = None
+    expense_types: Optional[List[ExpenseTypes]] = Field(alias="expense_types_list") | []
+    departments: Optional[List[Departments]] = Field(alias="departments_list") | []
+    permissions: Optional[List[GetPermission]] = Field(alias="permissions_list") | []
 
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 class CreateRole(TunedModel):
     name: str
