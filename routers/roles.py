@@ -167,17 +167,17 @@ async def update_role(
 
     # ───────── FIX FOR RESPONSE MODEL ─────────
 
-    updated_role.departments = [
-        rel.department for rel in updated_role.roles_departments
-    ]
-
-    updated_role.expense_types = [
-        rel.expense_type for rel in updated_role.expense_types
-    ]
-
-    updated_role.permissions = [
-        rel.permission for rel in updated_role.accesses
-    ]
+    # updated_role.departments = [
+    #     rel.department for rel in updated_role.roles_departments
+    # ]
+    #
+    # updated_role.expense_types = [
+    #     rel.expense_type for rel in updated_role.expense_types
+    # ]
+    #
+    # updated_role.permissions = [
+    #     rel.permission for rel in updated_role.accesses
+    # ]
 
     return updated_role
 
