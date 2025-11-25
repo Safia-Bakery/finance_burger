@@ -27,7 +27,7 @@ class GetRole(GetRoles):
     # permissions: Optional[List[GetPermission]] = Field(alias="permissions_list")
     expense_types: List[ExpenseTypes] = Field(
         default_factory=list,
-        alias="expense_types_list",
+        alias="expense_types",
     )
 
     departments: List[Departments] = Field(
