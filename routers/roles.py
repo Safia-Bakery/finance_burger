@@ -39,8 +39,9 @@ async def create_role(
 
         db.commit()
         db.refresh(created_role)
-        role_accesses = created_role.accesses
-        created_role.permissions = [access.permission for access in role_accesses]
+
+        # role_accesses = created_role.accesses
+        # created_role.permissions = [access.permission for access in role_accesses]
 
     if departments is not None:
         for department in departments:
@@ -50,9 +51,9 @@ async def create_role(
         db.commit()
         db.refresh(created_role)
 
-        role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db,
-                                                                              filters={"role_id": created_role.id})
-        created_role.departments = [relation.department for relation in role_department_relations]
+        # role_department_relations = await RoleDepartmentDAO.get_by_attributes(session=db,
+        #                                                                       filters={"role_id": created_role.id})
+        # created_role.departments = [relation.department for relation in role_department_relations]
 
 
     if expense_types is not None:
@@ -63,8 +64,8 @@ async def create_role(
         db.commit()
         db.refresh(created_role)
 
-        role_expense_type_relations = await RoleExpenseTypeDAO.get_by_attributes(session=db, filters={"role_id": created_role.id})
-        created_role.expense_types = [relation.expense_type for relation in role_expense_type_relations]
+        # role_expense_type_relations = await RoleExpenseTypeDAO.get_by_attributes(session=db, filters={"role_id": created_role.id})
+        # created_role.expense_types = [relation.expense_type for relation in role_expense_type_relations]
 
     return created_role
 
