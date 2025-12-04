@@ -25,7 +25,8 @@ async def create_role(
     departments = body.departments
     expense_types = body.expense_types
 
-    body_dict = body.model_dump()
+    body_dict = body.model_dump(exclude_unset=True)
+    body_dict["name"] = body_dict.get("name").strip() if body_dict.get("name") else ""
 
     body_dict.pop("permissions", None)
     body_dict.pop("departments", None)

@@ -326,8 +326,9 @@ async def update_request(
 
     # if body.status is not None and request.expense_type.checkable is True:
     if body.status is not None and request.checked_by_financier is False:
-        body_dict.pop("status", None)
-        raise HTTPException(status_code=404, detail="Данную заявку должен сперва проверить ответственный финансист !")
+        if body.status != 4:
+            body_dict.pop("status", None)
+            raise HTTPException(status_code=404, detail="Данную заявку должен сперва проверить ответственный финансист !")
 
     if body.checked_by_financier is True:
         if "check" not in current_user["permissions"]["Заявки"]:

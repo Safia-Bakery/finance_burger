@@ -167,7 +167,10 @@ async def create_user(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Пользователи": ["create"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
+    body_dict["fullname"] = body_dict.get("fullname").strip() if body_dict.get("fullname") else ""
+    body_dict["username"] = body_dict.get("username").strip() if body_dict.get("username") else ""
     body_dict["password"] = Hasher.get_password_hash(body.password)
+
     created_user = await UserDAO.add(session=db, **body_dict)
     db.commit()
     db.refresh(created_user)

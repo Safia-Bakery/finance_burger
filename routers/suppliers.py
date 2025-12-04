@@ -23,7 +23,9 @@ async def create_supplier(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Поставщики": ["create"]}))
 ):
-    created_obj = await SupplierDAO.add(session=db, **body.model_dump())
+    body_dict = body.model_dump(exclude_unset=True)
+    body_dict["name"] = body_dict.get("name").strip() if body_dict.get("name") else ""
+    created_obj = await SupplierDAO.add(session=db, **body_dict)
     db.commit()
     db.refresh(created_obj)
     return created_obj

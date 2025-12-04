@@ -23,6 +23,7 @@ async def create_company(
         current_user: dict = Depends(PermissionChecker(required_permissions={"Компании-плательщики": ["create"]}))
 ):
     body_dict = body.model_dump(exclude_unset=True)
+    body_dict["name"] = body_dict.get("name").strip() if body_dict.get("name") else ""
     created_company = await PayerCompanyDAO.add(session=db, **body_dict)
     db.commit()
     return created_company

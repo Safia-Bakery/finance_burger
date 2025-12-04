@@ -24,6 +24,8 @@ async def create_department(
 ):
     body_dict = body.model_dump(exclude_unset=True)
     body_dict.pop("role_ids", None)
+    body_dict["name"] = body_dict.get("name").strip() if body_dict.get("name") else ""
+
     created_department = await DepartmentDAO.add(session=db, **body_dict)
     user = await UserDAO.get_by_attributes(session=db, filters={"id": current_user["id"]}, first=True)
     if body.role_ids is not None:

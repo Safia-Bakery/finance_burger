@@ -23,7 +23,9 @@ async def create_country(
         db: Session = Depends(get_db),
         current_user: dict = Depends(PermissionChecker(required_permissions={"Страны": ["create"]}))
 ):
-    await CountryDAO.add(session=db, **body.model_dump(exclude_unset=True))
+    body_dict = body.model_dump(exclude_unset=True)
+    body_dict["name"] = body_dict.get("name").strip() if body_dict.get("name") else ""
+    await CountryDAO.add(session=db, **body_dict)
     db.commit()
     return {"success": True}
 
