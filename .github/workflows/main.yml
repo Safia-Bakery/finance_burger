@@ -7,6 +7,9 @@ on:
 jobs:
     Build:
         runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: ./finance_backend
         steps: 
             - name: Code checkout
               uses: actions/checkout@v4
@@ -16,6 +19,9 @@ jobs:
 
     Testing:
         runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: ./finance_backend
         needs: Build
         steps: 
             - name: Code checkout
