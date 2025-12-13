@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,7 +29,7 @@ async def create_currency(
     return created_currency
 
 
-@currencies_router.get("/currencies", response_model=Currencies)
+@currencies_router.get("/currencies", response_model=List[Currencies])
 async def get_currency_list(
         name: Optional[str] = None,
         db: Session = Depends(get_db),
