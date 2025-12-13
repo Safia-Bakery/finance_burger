@@ -8,6 +8,7 @@ from .countries import Countries
 from .cities import Cities
 from .departments import Departments
 from .payer_companies import PayerCompanies
+from .currencies import Currencies
 
 from .buyers import Buyers
 from .suppliers import Suppliers

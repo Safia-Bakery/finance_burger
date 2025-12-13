@@ -4,9 +4,15 @@ on:
     branches:
       - main
 
+
+permissions:
+  contents: read
+
+
 jobs:
   Build:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     
     steps: 
       - name: Code checkout
@@ -36,4 +42,40 @@ jobs:
             pip install -r requirements.txt &&
             sudo systemctl restart ${{ secrets.SERVICE_NAME }}
           "
+      
+      - name: Notify via Telegram on failure
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="❌ *Build job failed!*%0ARepository: ${{ github.repository }}%0ABranch: ${{ github.ref_name }}%0ACommit: ${{ github.sha }}%0ACheck logs in GitHub Actions." \
+            -d parse_mode=Markdown
+  
+  Security_scan:
+    runs-on: ubuntu-24.04
+    needs: Build
+
+    steps: 
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # check all historical commits
+      
+      - name: Run Trivy vulnerability scanner in fs mode 
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: json
+          exit-code: 0  # if set 1 and vulnerabilities were found then fail workflow, if set 0 then just continue
+          # trivy-config: trivy.yaml
+          vuln-type: os,library
+          output: trivy-results.json
+      
+      - name: Upload Trivy scan results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-scan-results
+          path: trivy-results.json
+        
 

@@ -19,6 +19,7 @@ from .budgets import budgets_router
 from .transactions import transactions_router
 from .transfers import transfers_router
 from .payer_companies import payer_companies_router
+from .currencies import currencies_router
 from .limits import limits_router
 from .purchase import purchase_router
 from .countries import countries_router

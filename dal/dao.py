@@ -32,6 +32,7 @@ from models.suppliers import Suppliers
 from models.transactions import Transactions
 from models.users import Users
 from models.limits import Limits
+from models.currencies import Currencies
 
 
 class PermissionGroupDAO(BaseDAO):
@@ -64,6 +65,10 @@ class UserDAO(BaseDAO):
 
 class PayerCompanyDAO(BaseDAO):
     model = PayerCompanies
+
+
+class CurrencyDAO(BaseDAO):
+    model = Currencies
 
 
 class DepartmentDAO(BaseDAO):
