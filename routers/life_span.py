@@ -111,16 +111,16 @@ async def create_role_lifespan():
                             session.commit()
 
 
-            user = await UserDAO.add(
-                session=session,
-                **{
-                    "username": settings.admin_role,
-                    "password": Hasher.get_password_hash(settings.admin_password),
-                    "role_id": role_id
-                }
-            )
-            print("user: ", user)
-            session.commit()
+        user = await UserDAO.add(
+            session=session,
+            **{
+                "username": settings.admin_role,
+                "password": Hasher.get_password_hash(settings.admin_password),
+                "role_id": role_id
+            }
+        )
+        print("user: ", user)
+        session.commit()
 
     yield  #--------------  HERE YOU CAN WRITE LOG ON CLOSING AFTER YIELD ------------
 
