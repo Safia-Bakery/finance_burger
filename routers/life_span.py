@@ -119,6 +119,7 @@ async def create_role_lifespan():
                     "role_id": role_id
                 }
             )
+            print("user: ", user)
             session.commit()
 
     yield  #--------------  HERE YOU CAN WRITE LOG ON CLOSING AFTER YIELD ------------
